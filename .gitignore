@@ -1,5 +1,35 @@
 venv
-*.pyc
 staticfiles
-.env
+*.log
+*.pyc
+__pycache__/
 *.sqlite3
+env/
+venv/
+ENV/
+.venv/
+.Python
+local_settings.py
+.env
+
+# Archivos de compilación y distribución
+build/
+dist/
+*.egg-info/
+.installed.cfg
+*.egg
+
+
+# Archivos de configuración de editores y entornos de desarrollo
+.idea/
+.vscode/
+*.code-workspace
+
+# Archivos de caché y temporales
+*.bak
+*.swp
+*.tmp
+
+# Archivos de traducción compilados
+*.mo
+*.pot

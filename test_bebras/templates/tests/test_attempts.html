@@ -1,0 +1,25 @@
+{% extends 'base_generic.html' %}
+
+{% block title %}Resumen de Intentos{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <h2 class="text-center">Resultados de los Intentos</h2>
+        
+        <div class="card-container">
+            {% for attempt in attempts %}
+                <div class="card">
+                    <h3>{{ attempt.test.name }}</h3>
+                    <p><strong>Usuario:</strong> {{ attempt.user.username }}</p>
+                    
+                    <div class="text-center">
+                        <a href="{% url 'test_review' attempt.test.id attempt.id %}" class="btn">Ver Resultados</a>
+                    </div>
+                </div>
+            {% empty %}
+                <p>No hay intentos registrados.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+{% endblock %}

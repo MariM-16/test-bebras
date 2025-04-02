@@ -1,0 +1,16 @@
+{% extends 'base_generic.html' %}
+{% block title %}Login{% endblock %}
+
+{% block content %}
+
+    <h2>Iniciar Sesión</h2>
+    <form method="POST">
+        {% csrf_token %}
+        <label>Usuario:</label>
+        <input type="text" name="username" value="testuser" readonly><br>
+        <label>Contraseña:</label>
+        <input type="password" name="password" value="testpassword" readonly><br>
+        <button type="submit">Entrar</button>
+    </form>
+
+{% endblock %}

@@ -1,0 +1,97 @@
+[
+    {
+      "model": "test_bebras.skill",
+      "test_id": 1,
+      "fields": {
+        "name": "Lógica"
+      }
+    },
+    {
+      "model": "test_bebras.skill",
+      "test_id": 2,
+      "fields": {
+        "name": "Matemáticas"
+      }
+    },
+    {
+      "model": "test_bebras.question",
+      "test_id": 1,
+      "fields": {
+        "statement": "¿Cuál es el siguiente número en la secuencia: 2, 4, 6, 8?",
+        "difficulty": 2,
+        "response_format": "number",
+        "skills": [1, 2],
+        "correct_answer": 10
+      }
+    },
+    {
+      "model": "test_bebras.question",
+      "test_id": 2,
+      "fields": {
+        "statement": "Selecciona la opción que completa la serie: A, B, C, __",
+        "difficulty": 3,
+        "response_format": "choice",
+        "skills": [1]
+      }
+    },
+    {
+      "model": "test_bebras.choice",
+      "test_id": 1,
+      "fields": {
+        "question": 2,
+        "text": "D",
+        "is_correct": true
+      }
+    },
+    {
+      "model": "test_bebras.choice",
+      "test_id": 2,
+      "fields": {
+        "question": 2,
+        "text": "E",
+        "is_correct": false
+      }
+    },
+    {
+      "model": "test_bebras.scoringconfiguration",
+      "test_id": 1,
+      "fields": {
+        "question": 1,
+        "points_per_difficulty": 10,
+        "penalty_for_incorrect": true,
+        "fixed_penalty": 2,
+        "allow_no_response": false
+      }
+    },
+    {
+      "model": "test_bebras.scoringconfiguration",
+      "test_id": 2,
+      "fields": {
+        "question": 2,
+        "points_per_difficulty": 15,
+        "penalty_for_incorrect": false,
+        "allow_no_response": true
+      }
+    },
+    {
+      "model": "test_bebras.test",
+      "test_id": 1,
+      "fields": {
+        "name": "Test de Lógica Básica",
+        "maximum_time": "00:30:00",
+        "allow_backtracking": true,
+        "questions": [1, 2]
+      }
+    },
+    {
+      "model": "test_bebras.test",
+      "test_id": 2,
+      "fields": {
+        "name": "Test de Matemáticas Básicas",
+        "maximum_time": "00:45:00",
+        "allow_backtracking": false,
+        "questions": [1]
+      }
+    }
+  ]
+  

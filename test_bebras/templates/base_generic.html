@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}">
+    <title>{% block title %}Test Bebras{% endblock %}</title>
+</head>
+<body>
+    <header>
+        <h1>Test Bebras</h1>
+        <nav>
+            <a href="{% url 'test_list' %}">Inicio</a>
+            <a href="{% url 'test_attempts' %}">Reviews</a>
+            {% if user.is_authenticated %}
+                <a href="{% url 'simple_logout' %}">Cerrar sesión</a>
+            {% else %}
+                <a href="{% url 'simple_login' %}">Iniciar sesión</a>
+            {% endif %}
+        </nav>
+    </header>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>
