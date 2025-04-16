@@ -4,57 +4,73 @@
 {% block title %}Detalles del Test{% endblock %}
 
 {% block content %}
-    {% if error %}
-    <p style="color: red;">{{ error }}</p>
-    {% endif %}
+    
+
     <h1>{{ test.name }}</h1>
-    <p>Este test tiene {{ test.maximum_time }} de tiempo máximo.</p>
-    <div class="timer" data-time-limit="{{ test.maximum_time.total_seconds }}">
-        ⏳ Tiempo restante: <span id="timer"></span>
-    </div>
-    <p>¿Permitir retroceder? {% if test.allow_backtracking %}Sí{% else %}No{% endif %}</p>
-    {% if current_question %}
-        <p>{{ current_question.text }}</p>
-        <p>Dificultad: {{ current_question.difficulty }}</p>
-        
-        <p>Habilidades relacionadas</p>
-        <ul>
-            {% for skill in current_question.skills.all %}
-                <li>{{ skill.name }}</li>
-            {% endfor %}
-        </ul>
-    {% endif %}
-    <h2>Pregunta {{ question_number }} de {{ test.questions.count }}</h2>
-    <form method="POST" action="" id="test-form">
-        {% csrf_token %}
-        
+
+    <div class="test-layout">
+        <div class="card card-lateral left">
+            <p><strong>Duración máxima:</strong> {{ test.maximum_time }}</p>
+            <div class="timer" data-time-limit="{{ test.maximum_time.total_seconds }}" data-test-id="{{ test.id }}" data-attempt-id="{{ attempt.id }}" data-allow-backtracking="{{ test.allow_backtracking|yesno:'true,false' }}">
+                       ⏳ <strong>Tiempo restante:</strong> <span id="timer" style="font-weight: bold; color: #d9534f;"></span>
+            </div>
+            <p><strong>¿Permitir retroceder?</strong> 
+                {% if test.allow_backtracking %}
+                    Sí
+                {% else %}
+                    No
+                {% endif %}
+            </p>
+        </div>
+
         <div class="test-card-container">
             <div class="question-card">
-                <h3>{{ current_question.statement|safe }}</h3>
+                <h3>Pregunta {{ question_number }} de {{ test.questions.count }}</h3>
+                <form method="POST" action="" id="test-form">
+                    {% csrf_token %}
 
-                {% if current_question.response_format == 'text' %}
-                    <div class="answer-space">
-                        <input type="text" name="question_{{ current_question.id }}" required>
-                    </div>
-                {% elif current_question.response_format == 'number' %}
-                    <div class="answer-space">
-                        <input type="number" name="question_{{ current_question.id }}" required>
-                    </div>
-                {% elif current_question.response_format == 'choice' %}
-                    <div class="answer-space choices">
-                        {% for choice in current_question.choices.all %}
-                            <label>
-                                <input type="radio" name="question_{{ current_question.id }}" value="{{ choice.id }}">
-                                {{ choice.text }}
-                            </label><br>
-                        {% endfor %}
-                    </div>
-                {% endif %}
+                    <h4>{{ current_question.statement|safe }}</h4>
+
+                    {% if current_question.response_format == 'text' %}
+                        <div class="answer-space">
+                            <input type="text" name="question_{{ current_question.id }}" required>
+                        </div>
+                    {% elif current_question.response_format == 'number' %}
+                        <div class="answer-space">
+                            <input type="number" name="question_{{ current_question.id }}" required>
+                        </div>
+                    {% elif current_question.response_format == 'choice' %}
+                        <div class="answer-space choices">
+                            {% for choice in current_question.choices.all %}
+                                <label>
+                                    <input type="radio" name="question_{{ current_question.id }}" value="{{ choice.id }}">
+                                    {{ choice.text|safe }}
+                                </label><br>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <button type="submit" class="btn-next" disabled>Siguiente</button>
+                </form>
             </div>
         </div>
 
-        <button type="submit" class="btn-next" disabled>Siguiente</button>
-    </form>
+        {% if current_question %}
+        <div class="card card-lateral">
+            <p><strong>Dificultad:</strong> {{ current_question.difficulty }}</p>
+
+            {% if current_question.skills.exists %}
+                <p><strong>Habilidades relacionadas:</strong></p>
+                <ul>
+                    {% for skill in current_question.skills.all %}
+                        <li>{{ skill.name }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
 
     <script src="{% static 'js/test_logic.js' %}"></script>
 {% endblock %}
+
