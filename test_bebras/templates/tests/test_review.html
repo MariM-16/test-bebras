@@ -4,30 +4,21 @@
 
 {% block content %}
     <div class="container">
-        <h2 class="text-center">Resumen del Test</h2>
+        <h3 class="text-center">Resumen del Test</h3>
         
         <div class="card-container">
             {% for result in question_results %}
                 <div class="card">
-                    <h3>Pregunta {{ forloop.counter }}</h3>
+                    <h4>Pregunta {{ forloop.counter }}</h4>
                     <p><strong>{{ result.question.statement|safe }}</strong></p>
                     
                     <p><strong>Tu respuesta:</strong> 
                         {% if result.user_answer %}
-                            {{ result.user_answer }}
+                            {{ result.user_answer|safe }}
                         {% else %}
                             <em>No respondida</em>
                         {% endif %}
                     </p>
-
-                    <p><strong>Respuesta correcta:</strong> 
-                        {% if result.correct_answer %}
-                            {{ result.correct_answer }}
-                        {% else %}
-                            <em>No disponible</em>
-                        {% endif %}
-                    </p>
-
                     {% if result.is_correct is True %}
                         <p class="correct">✅ Correcto</p>
                     {% elif result.is_correct is False %}
@@ -35,18 +26,16 @@
                     {% else %}
                         <p class="pending">🔵 Por corregir</p>
                     {% endif %}
-                    <p><strong>Puntaje por pregunta:</strong> 
-                        {{ result.question_score }} puntos
-                    </p>                    
+                    <p><strong>Habilidades evaluadas</strong></p>
+                    {% for skill in result.question.skills.all %}
+                        <li>{{ skill.name }}</li>
+                    {% endfor %}
+                  
                 </div>
             {% endfor %}
         </div>
-
-        <h3 class="text-center">Total de respuestas correctas: {{ total_correct }} / {{ total_questions }}</h3>
-        <h3 class="text-center">Puntaje total: {{ total_score }} puntos</h3>
-        <div class="text-center">
-            <a href="{% url 'test_list' %}" class="btn">Volver a la lista de tests</a>
-        </div>
+        <h4 class="text-center">Total de respuestas correctas: {{ total_correct }} / {{ total_questions }}</h4>
+        <a href="{% url 'test_list' %}" class="btn-outline">Volver a la lista de tests</a>
     </div>
 
 {% endblock %}
