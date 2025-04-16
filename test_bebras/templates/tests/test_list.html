@@ -3,11 +3,12 @@
 {% block title %}Lista de Tests{% endblock %}
 
 {% block content %}
-    <h2>Lista de Tests</h2>
+    <h3>Lista de Tests</h3>
     <div class="tests-card-container">
         {% for test in tests %}
             <div class="tests-card">
-                <h3><a href="{% url 'test_detail' test.id %}">{{ test.name }}</a></h3>
+                <h4>{{ test.name }}</h4>
+                <a href="{% url 'test_detail' test.id %}" class="btn-outline">Ver test</a>            
             </div>
         {% endfor %}
     </div>
