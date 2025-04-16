@@ -1,19 +1,24 @@
-document.addEventListener("DOMContentLoaded", function() {
-    let form = document.getElementById("test-form");
-    let button = document.querySelector(".btn-next");
-    let inputs = form.querySelectorAll("input");
-    let timerElement = document.getElementById("timer");
-    let timerContainer = document.querySelector(".timer");
+document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("test-form");
+    const button = document.querySelector(".btn-next");
+    const inputs = form.querySelectorAll("input");
+    const timerElement = document.getElementById("timer");
+    const timerContainer = document.querySelector(".timer");
 
-    let totalTestTime = parseInt(timerContainer.dataset.timeLimit, 10);
-    let savedTimeLeft = localStorage.getItem("timeLeft");
-    
+    const totalTestTime = parseInt(timerContainer.dataset.timeLimit, 10);
+    const testId = timerContainer.dataset.testId;
+    const attemptId = timerContainer.dataset.attemptId;
+    const allowBacktracking = timerContainer.dataset.allowBacktracking === "true";
+
+    const storageKey = `timeLeft-${testId}-${attemptId}`;
+
+    const savedTimeLeft = localStorage.getItem(storageKey);
     let timeLeft = savedTimeLeft ? parseInt(savedTimeLeft, 10) : totalTestTime;
 
     function checkInput() {
         let isFilled = false;
         inputs.forEach(input => {
-            if ((input.type === "radio" && input.checked) || 
+            if ((input.type === "radio" && input.checked) ||
                 (input.type !== "radio" && input.value.trim() !== "")) {
                 isFilled = true;
             }
@@ -25,8 +30,6 @@ document.addEventListener("DOMContentLoaded", function() {
         input.addEventListener("input", checkInput);
         input.addEventListener("change", checkInput);
     });
-
-    let allowBacktracking = timerContainer.dataset.allowBacktracking === "true";
 
     if (!allowBacktracking) {
         window.history.pushState(null, "", window.location.href);
@@ -42,13 +45,48 @@ document.addEventListener("DOMContentLoaded", function() {
         
         if (timeLeft <= 0) {
             clearInterval(timerInterval);
-            localStorage.removeItem("timeLeft"); 
+            localStorage.removeItem(storageKey);
             form.submit();
+            handleTimeout();
         } else {
-            localStorage.setItem("timeLeft", timeLeft); 
+            localStorage.setItem(storageKey, timeLeft);
             timeLeft--;
         }
     }
 
+    // Limpiar tiempo si el usuario envía el formulario (termina el test)
+    form.addEventListener("submit", function () {
+        localStorage.removeItem(storageKey);
+    });
+
     let timerInterval = setInterval(updateTimer, 1000);
+
+    Object.keys(localStorage).forEach(function(key) {
+        if (key.startsWith("timeLeft-")) {
+            localStorage.removeItem(key);
+        }
+    });
+
+    function handleTimeout() {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = window.location.href;
+    
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = csrfToken;
+        form.appendChild(csrfInput);
+    
+        const forceInput = document.createElement('input');
+        forceInput.type = 'hidden';
+        forceInput.name = 'force_finish';
+        forceInput.value = 'true';
+        form.appendChild(forceInput);
+    
+        document.body.appendChild(form);
+        form.submit();
+    }
+    
 });
