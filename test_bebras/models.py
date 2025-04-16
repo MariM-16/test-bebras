@@ -26,7 +26,7 @@ class Question(models.Model):
 
 class Choice(models.Model):
     question = models.ForeignKey(Question, related_name='choices', on_delete=models.CASCADE)
-    text = models.CharField(max_length=255)
+    text = RichTextField()
     is_correct = models.BooleanField(default=False)
 
     def __str__(self):
@@ -68,6 +68,8 @@ class Attempt(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     test = models.ForeignKey(Test, on_delete=models.CASCADE)
     date_taken = models.DateTimeField(auto_now_add=True)
+    score = models.FloatField(default=0)
+    correct_count = models.IntegerField(default=0)
 
     def __str__(self):
         return f"Attempt {self.id} by {self.user.username} for {self.test.name}"
