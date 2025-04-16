@@ -137,15 +137,27 @@ STATICFILES_DIRS = [
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 CKEDITOR_UPLOAD_PATH = "uploads/"
+
 CKEDITOR_CONFIGS = {
     'default': {
-        'toolbar': 'full',
-        'height': 300,
+        'toolbar': 'Custom',
+        'toolbar_Custom': [
+            ['Bold', 'Italic', 'Underline'],
+            ['Font', 'FontSize', 'TextColor', 'BGColor'],
+            ['Link', 'Unlink'],
+            ['NumberedList', 'BulletedList'],
+            ['JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'],
+            ['Image', 'UploadImage'],
+            ['RemoveFormat', 'Undo', 'Redo'],
+        ],
+        'height': 200,
         'width': '100%',
         'extraPlugins': ','.join([
-            'uploadimage',
+            'uploadimage', 'image2', 'justify', 'font', 'colorbutton',
         ]),
-    },
+        'removePlugins': 'stylesheetparser',
+        'forcePasteAsPlainText': False,
+    }
 }
 
 MEDIA_URL = '/media/'
