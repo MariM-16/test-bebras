@@ -3,23 +3,59 @@
 {% block title %}Resumen de Intentos{% endblock %}
 
 {% block content %}
-    <div class="container">
-        <h2 class="text-center">Resultados de los Intentos</h2>
-        
-        <div class="card-container">
-            {% for attempt in attempts %}
-                <div class="card">
-                    <h3>{{ attempt.test.name }}</h3>
-                    <p><strong>Usuario:</strong> {{ attempt.user.username }}</p>
-                    
-                    <div class="text-center">
-                        <a href="{% url 'test_review' attempt.test.id attempt.id %}" class="btn">Ver Resultados</a>
+<div class="container mt-5">
+    <h2 class="mb-4">Tus Resultados</h2>
+
+    {% if grouped_attempts %}
+        <div class="accordion" id="attemptsAccordion">
+            {% for test, attempts in grouped_attempts.items %}
+                <div class="accordion-item">
+                    <h3 class="accordion-header" id="heading-{{ forloop.counter }}">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{ forloop.counter }}" aria-expanded="false" aria-controls="collapse-{{ forloop.counter }}">
+                            {{ test.name }} ({{ attempts|length }} intento{{ attempts|length|pluralize }})
+                        </button>
+                    </h3>
+                    <div id="collapse-{{ forloop.counter }}" class="accordion-collapse collapse" aria-labelledby="heading-{{ forloop.counter }}" data-bs-parent="#attemptsAccordion">
+                        <div class="accordion-body">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        {% if show_user %}
+                                            <th scope="col">Usuario</th>
+                                        {% endif %}
+                                        <th scope="col">Fecha</th>
+                                        <th scope="col">Puntaje</th>
+                                        <th scope="col">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for attempt in attempts %}
+                                        <tr>
+                                            {% if show_user %}
+                                                <td>{{ attempt.user.username }}</td>
+                                            {% endif %}
+                                            <td>{{ attempt.date_taken|date:"d M Y, H:i" }}</td>
+                                            <td>
+                                                <span class="badge {% if attempt.score >= 80 %}bg-success{% elif attempt.score >= 60 %}bg-warning{% else %}bg-danger{% endif %}">
+                                                    {{ attempt.score|floatformat:2 }}%
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <a href="{% url 'test_review' attempt.test.id attempt.id %}" class="btn btn-sm btn-outline-primary">Ver</a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
-            {% empty %}
-                <p>No hay intentos registrados.</p>
             {% endfor %}
         </div>
-    </div>
-
+    {% else %}
+        <div class="alert alert-info text-center" role="alert">
+            No hay intentos registrados todavía.
+        </div>
+    {% endif %}
+</div>
 {% endblock %}
