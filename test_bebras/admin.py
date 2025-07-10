@@ -4,6 +4,8 @@ from django.contrib import admin
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
 from django.forms import Textarea
+from django.utils.timezone import now
+from decimal import Decimal, InvalidOperation
 
 from .models import Answer, Attempt, Choice, Question, Skill, Test, TestAssignment
 
@@ -47,11 +49,12 @@ class ChoiceAdmin(admin.ModelAdmin):
 
 @admin.register(Test)
 class TestAdmin(admin.ModelAdmin):
-    list_display = ('name', 'maximum_time_display', 'allow_backtracking', 'allow_no_response', 'display_points_and_penalties', 'creator')
+    list_display = ('name', 'maximum_time_display', 'allow_backtracking', 'allow_no_response', 'max_attempts', 'display_points_and_penalties', 'creator')
     filter_horizontal = ('questions',)
+
     fieldsets = (
         (None, {
-            'fields': ('name', 'questions', 'maximum_time', 'allow_backtracking', 'allow_no_response', 'creator')
+            'fields': ('name', 'questions', 'maximum_time', 'allow_backtracking', 'allow_no_response', 'max_attempts', 'creator')
         }),
         ('Configuración de Puntuación', {
             'fields': ('points_per_difficulty', 'penalty_type', 'fixed_penalty', 'penalty_by_difficulty'),
@@ -81,18 +84,70 @@ class TestAdmin(admin.ModelAdmin):
     display_points_and_penalties.short_description = "Puntos y Penalizaciones"
     display_points_and_penalties.allow_tags = True
 
-
 @admin.register(Answer)
 class AnswerAdmin(admin.ModelAdmin):
-    list_display = ('user', 'question', 'attempt', 'answered_at')
-    list_filter = ('answered_at', 'user', 'attempt__test')
-    search_fields = ('user__username', 'question__statement')
-    readonly_fields = ('user', 'question', 'attempt', 'answer_text', 'answer_number', 'answer_choice', 'answered_at')
+    list_display = ('user', 'question', 'attempt', 'answered_at', 'grade_status', 'manual_grade', 'is_correct_manual', 'graded_by', 'graded_at')
+    list_filter = ('answered_at', 'user', 'attempt__test', 'grade_status', 'is_correct_manual')
+    search_fields = ('user__username', 'question__statement', 'answer_text')
+
+    readonly_fields = ('user', 'question', 'attempt', 'answer_text', 'answer_number', 'answer_choice', 'answered_at', 'manual_grade', 'graded_by', 'graded_at')
     
+    fieldsets = (
+        (None, {
+            'fields': ('user', 'question', 'attempt', 'answered_at', 'answer_text', 'answer_number', 'answer_choice')
+        }),
+        ('Corrección Manual', {
+            'fields': ('grade_status', 'is_correct_manual'),
+            'description': 'Marque si la respuesta es correcta. El puntaje se calculará automáticamente.'
+        }),
+    )
+
+    def save_model(self, request, obj, form, change):
+        if 'is_correct_manual' in form.changed_data:
+            obj.grade_status = 'graded'
+            obj.graded_by = request.user
+            obj.graded_at = now()
+
+            if obj.is_correct_manual:
+                test_points_config = obj.attempt.test.points_per_difficulty
+                
+                if test_points_config and str(obj.question.difficulty) in test_points_config:
+                    obj.manual_grade = Decimal(str(test_points_config[str(obj.question.difficulty)]))
+                else:
+                    obj.manual_grade = Decimal('0.0')
+            else:
+                calculated_penalty = Decimal('0.0')
+                test_penalty_type = obj.attempt.test.penalty_type
+                
+                if test_penalty_type == 'fixed':
+                    calculated_penalty = obj.attempt.test.fixed_penalty if obj.attempt.test.fixed_penalty is not None else Decimal('0.0')
+                elif test_penalty_type == 'by_difficulty':
+                    penalty_config = obj.attempt.test.penalty_by_difficulty
+                    if penalty_config and str(obj.question.difficulty) in penalty_config:
+                        calculated_penalty = Decimal(str(penalty_config[str(obj.question.difficulty)]))
+                    else:
+                        calculated_penalty = Decimal('0.0')
+
+                obj.manual_grade = -calculated_penalty 
+
+        elif 'grade_status' in form.changed_data and obj.grade_status != 'graded':
+            obj.graded_by = None
+            obj.graded_at = None
+            obj.manual_grade = None
+            obj.is_correct_manual = None
+
+        super().save_model(request, obj, form, change)
+
+
     def has_add_permission(self, request):
         return False
+
     def has_change_permission(self, request, obj=None):
-        return False
+        if obj is None:
+            return super().has_change_permission(request, obj)
+        
+        return obj.grade_status == 'pending'
+
     def has_delete_permission(self, request, obj=None):
         return False
 
