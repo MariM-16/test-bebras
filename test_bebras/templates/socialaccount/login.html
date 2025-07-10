@@ -1,0 +1,34 @@
+{% extends 'base_generic.html' %}
+{% load i18n %}
+{% load socialaccount %}
+
+{% block head_title %}{% trans "Sign In" %}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="card login-card">
+        <h3 class="text-center">{% trans "Iniciar Sesión con Google" %}</h3>
+
+        <p class="text-center text-muted">
+            {% blocktrans with provider_name=account.get_provider.name %}
+            Estás a punto de iniciar sesión usando tu cuenta de Google.
+            {% endblocktrans %}
+        </p>
+
+        <form method="post" class="login-form">
+            {% csrf_token %}
+            {% if form.errors %}
+                <ul class="messages">
+                    {% for field, errors in form.errors.items %}
+                        {% for error in errors %}
+                            <li class="alert danger">{{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+            {% endif %}
+
+            <button type="submit" class="btn">{% trans "Continuar" %}</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -10,8 +10,10 @@ https://docs.djangoproject.com/en/2.0/ref/settings/
 """
 
 import os
+import environ
 import dj_database_url
 import django_heroku
+from google.oauth2 import service_account
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -43,6 +45,11 @@ INSTALLED_APPS = [
     'test_bebras',
     'ckeditor',
     'ckeditor_uploader',
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
 ]
 
 MIDDLEWARE = [
@@ -54,6 +61,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = 'pdt2.urls'
@@ -85,6 +93,9 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+         'OPTIONS': {
+            'timeout': 20,
+        }
     }
 }
 
@@ -106,11 +117,23 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/2.0/topics/i18n/
 
+env = environ.Env(
+    GS_BUCKET_NAME=(str, ''),
+    GS_CREDENTIALS_FILE=(str, ''),  
+    EMAIL_HOST_USER=(str, ''),  
+    EMAIL_HOST_PASSWORD=(str, ''),  
+    SOCIAL_AUTH_GOOGLE_CLIENT_ID=(str, ''),  
+    SOCIAL_AUTH_GOOGLE_SECRET=(str, ''),  
+)
+
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
+TIME_ZONE = 'America/Santiago'
 
 # Change 'default' database configuration with $DATABASE_URL.
 DATABASES['default'].update(dj_database_url.config(conn_max_age=500, ssl_require=True))
@@ -139,31 +162,102 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 CKEDITOR_UPLOAD_PATH = "uploads/"
 
 CKEDITOR_CONFIGS = {
-    'default': {
-        'toolbar': 'Custom',
-        'toolbar_Custom': [
-            ['Bold', 'Italic', 'Underline'],
-            ['Font', 'FontSize', 'TextColor', 'BGColor'],
-            ['Link', 'Unlink'],
-            ['NumberedList', 'BulletedList'],
-            ['JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'],
-            ['Image', 'UploadImage'],
-            ['RemoveFormat', 'Undo', 'Redo'],
-        ],
-        'height': 200,
-        'width': '100%',
-        'extraPlugins': ','.join([
-            'uploadimage', 'image2', 'justify', 'font', 'colorbutton',
-        ]),
-        'removePlugins': 'stylesheetparser',
-        'forcePasteAsPlainText': False,
-    }
-}
+     'default': {
+         'toolbar': 'full',
+         'height': 200,
+         'width': '100%',
+         'extraPlugins': ','.join([
+             'uploadimage','image2',
+         ]),
+     },
+ }
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 LOGIN_URL = '/login/'
 
-
 # Activate Django-Heroku.
 django_heroku.settings(locals())
+
+
+#google cloud
+INSTALLED_APPS += ["storages"]
+
+DEFAULT_FILE_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
+STATICFILES_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
+
+GS_BUCKET_NAME = env('GS_BUCKET_NAME')
+GS_CREDENTIALS = env('GS_CREDENTIALS_FILE')
+
+GS_CREDENTIALS_FILE_NAME = env('GS_CREDENTIALS_FILE')
+GS_CREDENTIALS_PATH = os.path.join(BASE_DIR, 'test_bebras', 'static', GS_CREDENTIALS_FILE_NAME)
+
+GS_CREDENTIALS = None
+if GS_CREDENTIALS_FILE_NAME and os.path.exists(GS_CREDENTIALS_PATH):
+    GS_CREDENTIALS = service_account.Credentials.from_service_account_file(GS_CREDENTIALS_PATH)
+else:
+    print(f"ADVERTENCIA: Archivo de credenciales de Google Cloud Storage no encontrado o nombre no especificado: {GS_CREDENTIALS_PATH}")
+
+
+
+MEDIA_URL = f'https://storage.googleapis.com/{GS_BUCKET_NAME}/'
+
+STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.gcloud.GoogleCloudStorage",
+        "OPTIONS": {
+            "bucket_name": GS_BUCKET_NAME,
+            "credentials": GS_CREDENTIALS,
+        },
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+EMAIL_HOST_USER =   env('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
+EMAIL_TIMEOUT = 30
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+
+# Configuración de ALLAUTH
+SITE_ID = 1
+
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_EMAIL_VERIFICATION = 'optional' 
+LOGIN_REDIRECT_URL = '/tests/'
+SOCIALACCOUNT_LOGIN_REDIRECT_URL = '/tests/'
+ACCOUNT_ALLOW_REGISTRATION = False
+SOCIALACCOUNT_AUTO_SIGNUP = False
+SOCIALACCOUNT_ADAPTER = 'test_bebras.adapters.NoSignupSocialAccountAdapter'
+
+
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'APP': {
+            'client_id': env('SOCIAL_AUTH_GOOGLE_CLIENT_ID'),
+            'secret': env('SOCIAL_AUTH_GOOGLE_SECRET'), 
+            'key': '' 
+        },
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'offline',
+        }
+    }
+}
+
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+)
