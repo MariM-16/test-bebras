@@ -1,0 +1,85 @@
+{% extends "base_generic.html" %}
+
+{% block title %}Asignar Tests a Grupos{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="text-center mb-4">Asignar Tests a Grupos y Notificar</h1>
+    <p class="lead text-center">Gestiona la asignación de tests a tus grupos de estudiantes y envíales notificaciones por email.</p>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row">
+        <div class="col-md-5">
+            <div class="card p-4 shadow-sm mb-4">
+                <h5 class="card-title text-center mb-3">Asignar Nuevos Tests</h5>
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary mt-3">Asignar y Notificar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-md-7">
+            <div class="card p-4 shadow-sm">
+                <h5 class="card-title text-center mb-3">Tus Grupos y Estudiantes</h5>
+                {% if groups_data %}
+                    <div class="accordion" id="groupsAccordion">
+                        {% for group_data in groups_data %}
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="heading{{ group_data.group.id }}">
+                                <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ group_data.group.id }}" aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}" aria-controls="collapse{{ group_data.group.id }}">
+                                    {{ group_data.group.name }} ({{ group_data.students.count }} estudiante{{ group_data.students.count|pluralize }})
+                                </button>
+                            </h2>
+                            <div id="collapse{{ group_data.group.id }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" aria-labelledby="heading{{ group_data.group.id }}" data-bs-parent="#groupsAccordion">
+                                <div class="accordion-body">
+                                    <h6>Tests Asignados a este Grupo:</h6>
+                                    {% if group_data.assigned_tests %}
+                                        <ul class="list-group mb-3">
+                                            {% for test in group_data.assigned_tests %}
+                                                <li class="list-group-item list-group-item-info py-1">{{ test.name }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    {% else %}
+                                        <p class="text-muted">Ningún test asignado aún.</p>
+                                    {% endif %}
+
+                                    <h6>Estudiantes en este Grupo:</h6>
+                                    {% if group_data.students %}
+                                        <ul class="list-group">
+                                            {% for student in group_data.students %}
+                                                <li class="list-group-item py-1">
+                                                    {{ student.get_full_name|default:student.email }}
+                                                    {% if student.email %} ({{ student.email }}) {% endif %}
+                                                </li>
+                                            {% empty %}
+                                                <li class="list-group-item text-muted">No hay estudiantes en este grupo.</li>
+                                            {% endfor %}
+                                        </ul>
+                                    {% else %}
+                                        <p class="text-muted">No hay estudiantes en este grupo que sean del rol 'Estudiantes'.</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center">No hay grupos disponibles para gestionar (excluyendo 'Estudiantes' y 'Profesores').</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

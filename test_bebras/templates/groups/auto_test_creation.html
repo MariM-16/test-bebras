@@ -1,0 +1,40 @@
+{% extends 'base_generic.html' %}
+{% load static %}
+
+{% block title %}Crear Test{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <h1>Crear Test</h1>
+        <p class="text-center">Define los parámetros y el sistema generará un test con preguntas existentes.</p>
+
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        <div class="card login-card">
+            <form method="post" class="login-form" id="autoTestForm">
+                {% csrf_token %}
+
+                {% for field in form %}
+                    <div class="form-group" id="form-group-{{ field.name }}">
+                        {{ field.label_tag }}
+                        {{ field }}
+                        {% if field.help_text %}
+                            <small class="form-text text-muted">{{ field.help_text }}</small>
+                        {% endif %}
+                        {% for error in field.errors %}
+                            <p class="error-message">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+
+                <button type="submit" class="btn btn-primary btn-generate-test">Generar Test</button>
+            </form>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends "base_generic.html" %}
+
+{% block title %}Cargar Estudiantes{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="text-center mb-4">Cargar Estudiantes</h1>
+    <p class="text-center">Sube un archivo CSV para añadir o actualizar estudiantes y asignarlos a grupos.</p>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card p-4 shadow-sm">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary mt-3">Subir Archivo</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <hr class="my-5">
+
+    <h2 class="text-center mb-4">Formato del Archivo CSV</h2>
+    <p class="text-center mb-4">El archivo CSV debe tener las siguientes columnas (el orden no importa, pero **los nombres de las columnas sí**):</p>
+    
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card p-4 bg-light">
+                <h5 class="mt-4 mb-3">Ejemplo de CSV:</h5>
+                <pre class="bg-dark text-white p-3 rounded"><code>email,nombre,apellido,grupos
+juan.perez@example.com,Juan,Perez,Matematicas,4to B
+maria.gomez@example.com,Maria,Gomez,Ciencias,5to A
+carlos.ruiz@example.com,Carlos,Ruiz,Matematicas,6to C</code></pre>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

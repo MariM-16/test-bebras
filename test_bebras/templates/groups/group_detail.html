@@ -1,0 +1,97 @@
+{% extends "base_generic.html" %}
+
+{% block title %}Detalle del Grupo: {{ group.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="text-center mb-4">{{ group.name }}</h1>
+    <p class="lead text-center">Aquí puedes gestionar los estudiantes y los tests asignados a este grupo.</p>
+
+    {% if messages %}
+        {% for message in message %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card p-4 shadow-sm h-100">
+                <h5 class="card-title text-center mb-3">Estudiantes</h5>
+                {% if students_in_group %}
+                    <ul class="list-group mb-3">
+                        {% for student in students_in_group %}
+                            <li class="list-group-item py-1">
+                                {{ student.get_full_name|default:student.username }} 
+                                {% if student.email %} ({{ student.email }}) {% endif %}
+                                <a href="{% url 'group_history_results' group.id %}?student={{ student.id }}" class="btn btn-sm btn-info float-end">Ver Historial</a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted text-center">No hay estudiantes en este grupo con el rol 'Estudiantes'.</p>
+                {% endif %}
+
+                <h5 class="card-title text-center mb-3">Tests Asignados a {{ group.name }}</h5>
+                {% if assigned_tests_for_group %}
+                    <ul class="list-group">
+                        {% for test in assigned_tests_for_group %}
+                            <li class="list-group-item list-group-item-info py-1">
+                                {{ test.name }}
+                                <a href="{% url 'test_statistics_dashboard' %}?group={{ group.id }}&test={{ test.id }}" class="btn btn-sm btn-secondary float-end">Ver Estadísticas</a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted text-center">Ningún test asignado a este grupo aún.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card p-4 shadow-sm h-100">
+                <h5 class="card-title text-center mb-3">Asignar Nuevo(s) Test(s) </h5>
+                {% if assign_test_form.fields.tests.queryset %} 
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ assign_test_form.tests.label_tag }} 
+                        {{ assign_test_form.tests }} 
+                        {% if assign_test_form.tests.help_text %}<small class="form-text text-muted">{{ assign_test_form.tests.help_text }}</small>{% endif %}  
+                        {% if assign_test_form.tests.errors %}<div class="alert alert-danger">{{ assign_test_form.tests.errors }}</div>{% endif %}  
+                
+                        {{ assign_test_form.send_notification_email.label_tag }}
+                        {{ assign_test_form.send_notification_email }}
+                        {% if assign_test_form.send_notification_email.help_text %}<small class="form-text text-muted">{{ assign_test_form.send_notification_email.help_text }}</small>{% endif %}  
+                        {% if assign_test_form.send_notification_email.errors %}<div class="alert alert-danger">{{ assign_test_form.send_notification_email.errors }}</div>{% endif %}  
+                
+                        {{ assign_test_form.email_subject.label_tag }}  
+                        {{ assign_test_form.email_subject }}  
+                        {% if assign_test_form.email_subject.help_text %}<small class="form-text text-muted">{{ assign_test_form.email_subject.help_text }}</small>{% endif %}  
+                        {% if assign_test_form.email_subject.errors %}<div class="alert alert-danger">{{ assign_test_form.email_subject.errors }}</div>{% endif %}  
+                
+                        {{ assign_test_form.email_message.label_tag }}  
+                        {{ assign_test_form.email_message }}  
+                        {% if assign_test_form.email_message.help_text %}<small class="form-text text-muted">{{ assign_test_form.email_message.help_text }}</small>{% endif %}  
+                        {% if assign_test_form.email_message.errors %}<div class="alert alert-danger">{{ assign_test_form.email_message.errors }}</div>{% endif %}  
+                
+                        <input type="hidden" name="group" value="{{ group.id }}">
+                
+                
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary mt-3">Asignar y Notificar</button>
+                        </div>
+                    </form>
+                {% else %}
+                    <p class="text-muted text-center">No hay tests disponibles para asignar a este grupo.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center mt-4">
+        <a href="{% url 'group_list' %}" class="btn btn-secondary">Volver a la Lista de Grupos</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends "base_generic.html" %}
+
+{% block title %}Tus Grupos{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="text-center mb-4">Tus Grupos de Estudiantes</h1>
+    <p class="lead text-center">Selecciona un grupo para ver sus detalles, estudiantes y asignar tests.</p>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="text-center mb-4">
+        <a href="{% url 'upload_students' %}" class="btn btn-success">Cargar grupo de estudiantes</a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            {% if groups_data %}
+                <ul class="list-group">
+                    {% for data in groups_data %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center shadow-sm mb-2">
+                            <div>
+                                <h5 class="mb-1">
+                                    <a href="{% url 'group_detail' data.group.id %}" class="text-decoration-none">
+                                        {{ data.group.name }}
+                                    </a>
+                                </h5>
+                                <small class="text-muted">
+                                    {{ data.student_count }} estudiante{{ data.student_count|pluralize }} | 
+                                    {{ data.assigned_tests_count }} test{{ data.assigned_tests_count|pluralize }} asignado{{ data.assigned_tests_count|pluralize }}
+                                </small>
+                            </div>
+                            <a href="{% url 'group_detail' data.group.id %}" class="btn btn-sm btn-primary">Ver Detalles</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="alert alert-info text-center" role="alert">
+                    No hay grupos disponibles para gestionar.
+                    <a href="{% url 'upload_students' %}" class="btn btn-success mt-3">Cargar grupo de estudiantes</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
