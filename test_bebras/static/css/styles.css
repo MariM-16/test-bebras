@@ -82,7 +82,7 @@ h1, h2, h3, h4 {
     text-align: center;
 }
 
-.tests-card a, .btn, .btn-next {
+.tests-card a, .btn { 
     display: inline-block;
     padding: 0.625rem 0.9375rem;
     background-color: var(--color-primary);
@@ -94,7 +94,7 @@ h1, h2, h3, h4 {
     cursor: pointer;
 }
 
-.tests-card a:hover, .btn:hover, .btn-next:hover {
+.tests-card a:hover, .btn:hover {
     background-color: var(--color-primary-hover);
 }
 
@@ -180,7 +180,6 @@ body.base-layout {
     flex-direction: column;
 }
 
-
 .test-title {
     font-size: 1.25rem;
     font-weight: bold;
@@ -201,6 +200,10 @@ body.base-layout {
     text-align: center;
     padding: 2rem;
     justify-self: anchor-center;
+    max-width: 400px;
+    margin: 50px auto;
+    box-shadow: var(--shadow);
+    border-radius: var(--radius);
 }
 
 .login-form {
@@ -208,19 +211,315 @@ body.base-layout {
     flex-direction: column;
     gap: 1rem;
     text-align: left;
+    margin-bottom: 1.5rem;
 }
 
-.form-group {
+.login-form p {
+    margin-bottom: 1rem;
+}
+
+.login-form label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+}
+
+.login-form input[type="text"],
+.login-form input[type="password"],
+.login-form input[type="email"] {
+    width: 100%;
+    padding: 0.625rem;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    box-sizing: border-box;
+}
+
+.separator-text {
+    text-align: center;
+    margin: 1.5rem 0;
+    position: relative;
+}
+
+.separator-text span {
+    background-color: var(--color-white);
+    padding: 0 10px;
+    position: relative;
+    z-index: 1;
+    color: #888;
+}
+
+.separator-text::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: #ddd;
+    z-index: 0;
+}
+
+.social-login-options {
     display: flex;
     flex-direction: column;
+    gap: 1rem;
 }
 
-.login-google {
-    margin-top: 1rem;
+.social-google-btn {
+    background-color: var(--color-white);
+    color: var(--color-text);
+    border: 1px solid #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 0.625rem 1rem;
+    border-radius: 0.3125rem;
+    text-decoration: none;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.social-google-btn:hover {
+    background-color: #f0f0f0;
+    border-color: #bbb;
+}
+
+.social-icon {
+    height: 20px;
+    width: 20px;
+    margin-right: 10px;
+    vertical-align: middle;
+}
+
+.mt-4 {
+    margin-top: 1.5rem;
+}
+
+.messages {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 1.5rem;
+}
+
+.messages .alert {
+    padding: 0.75rem 1.25rem;
+    margin-bottom: 1rem;
+    border: 1px solid transparent;
+    border-radius: 0.25rem;
+    text-align: left;
+}
+
+.messages .alert.error, .messages .alert.danger {
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+}
+
+.messages .alert.success {
+    color: #155724;
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+}
+
+.messages .alert.info {
+    color: #0c5460;
+    background-color: #d1ecf1;
+    border-color: #bee5eb;
 }
 
 .login-hint {
-    margin-top: 1.5rem;
-    font-size: 0.9rem;
-    color: gray;
+    display: none;
 }
+
+.navigation-buttons {
+    display: flex;
+    justify-content: space-between; 
+    margin-top: 20px;
+    align-items: center;
+}
+
+.navigation-buttons > div:empty {
+    width: 0;
+}
+
+.btn-prev, .btn-next {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    text-decoration: none; 
+    display: inline-block;
+}
+
+.btn-prev {
+    background-color: #6c757d; 
+    color: var(--color-white);
+}
+
+.btn-prev:hover {
+    background-color: #5a6268;
+}
+
+.btn-next {
+    background-color: var(--color-primary);
+    color: var(--color-white);
+}
+
+.btn-next:hover {
+    background-color: var(--color-primary-hover); 
+}
+
+.btn-next:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+.error-message {
+    color: red;
+    font-weight: bold;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.test-review-layout {
+    display: grid;
+    grid-template-columns: 0.7fr 2fr;
+    gap: 1.25rem;
+    align-items: start;
+    margin-top: 1.875rem;
+    justify-content: center;
+}
+
+.review-summary-card {
+    text-align: center;
+    width: auto;
+    max-width: 15rem;
+    position: sticky;
+    top: 20px;
+    justify-self: end;
+    margin-right: 0;
+    margin-left: auto;
+}
+
+.review-questions-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    align-items: center;
+    justify-self: start;
+}
+
+.question-review-card {
+    width: 100%;
+    max-width: 45rem;
+}
+
+.question-statement {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+}
+
+.answer-details p {
+    margin-bottom: 0.5rem;
+}
+
+.user-answer-text, .correct-answer-text {
+    font-weight: bold;
+    color: var(--color-text);
+}
+
+.no-answer-text {
+    font-style: italic;
+    color: #888;
+}
+
+.result-status {
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    margin-top: 1rem;
+}
+
+.question-score-info {
+    font-weight: bold;
+    margin-top: 0.5rem;
+    text-align: right;
+    padding-right: 10px;
+}
+
+.score-display {
+    font-size: 1.3rem;
+    color: var(--color-primary);
+}
+
+.skills-list {
+    list-style-type: disc;
+    padding-left: 20px;
+    margin-top: 0.5rem;
+}
+
+.result-buttons .btn {
+    margin-top: 1.5rem;
+    width: 80%;
+}
+
+@media (max-width: 768px) {
+    .test-layout, .test-review-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .card-lateral.left, .card-lateral, .review-summary-card {
+        max-width: 100%;
+        margin-left: 0;
+        margin-right: 0;
+        position: static;
+        top: auto;
+        justify-self: center;
+    }
+
+    .result-buttons .btn {
+        width: 100%;
+    }
+}
+
+.user-attempts-table {
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.general-performance-chart-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 300px;
+}
+
+.chart-canvas-wrapper {
+    max-width: 250px;
+    max-height: 250px;
+}
+
+.skill-performance-chart-container {
+    overflow-x: auto;
+    min-height: 250px;
+}
+
+.btn-generate-test {
+    margin-top: 1.5rem;
+}
+
+.timer-display {
+    font-weight: bold;
+    color: #d9534f;
+}
+
+.create-test-button-wrapper {
+    margin-bottom: 20px; 
+    text-align: center;
+}
+
+.create-test-form {
+    display: inline-block; 
+}
+
+
