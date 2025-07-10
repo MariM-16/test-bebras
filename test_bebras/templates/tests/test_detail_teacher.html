@@ -1,0 +1,87 @@
+{% extends "base_generic.html" %}
+{% load static %}
+
+{% block title %}Detalles del Test: {{ test.name }}{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <h4 class="text-center">{{ test.name }}</h4>
+        
+        <div class="test-review-layout">
+            <div class="card card-lateral review-summary-card">
+                <h4>Información del Test</h4>
+                <p><strong>Límite de Tiempo:</strong> {{ test.maximum_time }} minutos</p>
+                <p><strong>Número de Preguntas:</strong> {{ questions.count }}</p>
+                <p><strong>Permite retroceder:</strong> 
+                    {% if test.allow_backtracking %}Sí{% else %}No{% endif %}
+                </p>
+                <p><strong>Permite no responder:</strong> 
+                    {% if test.allow_no_response %}Sí{% else %}No{% endif %}
+                </p>
+                
+                <div class="result-buttons">
+                    <a href="{% url 'test_list' %}" class="btn btn-secondary">Volver a la Lista de Tests</a>
+                    <a href="{% url 'assign_test_to_group' %}" class="btn btn-primary">Asignar Test</a>
+                </div>
+            </div>
+
+            <div class="card-container review-questions-container">
+                {% if questions %}
+                    {% for question in questions %}
+                        <div class="card question-review-card">
+                            <h4>Pregunta {{ forloop.counter }}</h4>
+                            <p class="question-statement">{{ question.statement|safe }}</p> 
+                            
+                            <div class="answer-details">
+                                <p><strong>Dificultad:</strong> {{ question.difficulty }}</p>
+
+                                {% if question.response_format == 'choice' %}
+                                    <h6>Opciones:</h6>
+                                    <ul class="list-group mb-3">
+                                        {% for choice in question.choices.all %}
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                {{ choice.text }}
+                                                {% if choice.is_correct %}
+                                                    <span class="badge bg-success">Correcta</span>
+                                                {% endif %}
+                                            </li>
+                                        {% empty %}
+                                            <li class="list-group-item text-muted">No hay opciones para esta pregunta.</li>
+                                        {% endfor %}
+                                    </ul>
+                                {% elif question.response_format == 'text' %}
+                                    <p><strong>Respuesta esperada (texto):</strong> 
+                                        {% if question.correct_answer %} 
+                                            <span class="correct-answer-text">{{ question.correct_answer|safe }}</span>
+                                        {% else %}
+                                            <em class="text-muted">No especificada</em>
+                                        {% endif %}
+                                    </p>
+                                {% elif question.response_format == 'number' %}
+                                    <p><strong>Respuesta esperada (número):</strong> 
+                                        {% if question.correct_answer is not None %} 
+                                            <span class="correct-answer-text">{{ question.correct_answer }}</span>
+                                        {% else %}
+                                            <em class="text-muted">No especificada</em>
+                                        {% endif %}
+                                    </p>
+                                {% endif %}
+                            </div>
+                            
+                            {% if question.skills.exists %}
+                                <p><strong>Habilidades evaluadas:</strong></p>
+                                <ul class="skills-list">
+                                    {% for skill in question.skills.all %}
+                                        <li>{{ skill.name }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-center text-muted">Este test no tiene preguntas asociadas.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

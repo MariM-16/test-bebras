@@ -10,81 +10,50 @@ from collections import defaultdict
 
 @login_required
 def test_list(request):
-    tests = Test.objects.all()
+    if is_teacher_or_staff(request.user):
+        if request.user.is_staff:
+            tests = Test.objects.all().order_by('name')
+        else:
+            tests = Test.objects.filter(creator=request.user).order_by('name')
+    else:
+        user_groups_ids = request.user.groups.values_list('id', flat=True)
+        tests = Test.objects.filter(assigned_groups__id__in=user_groups_ids).distinct().order_by('name')
+
     return render(request, 'tests/test_list.html', {'tests': tests})
 
 @login_required
 def test_detail(request, test_id):
     test = get_object_or_404(Test, id=test_id)
-    questions = list(test.questions.order_by('id'))  # orden explícito
-    total_questions = len(questions)
 
-    if 'attempt_id' not in request.session or request.session.get('current_test_id') != test.id:
-        attempt = Attempt.objects.create(user=request.user, test=test)
-        request.session['attempt_id'] = attempt.id
+    if is_teacher_or_staff(request.user):
+        if not request.user.is_staff and test.creator != request.user:
+            messages.error(request, "No tienes permiso para ver este test.")
+            return redirect('test_list')
+    elif is_student(request.user):
+        user_groups_ids = request.user.groups.values_list('id', flat=True)
+        if not Test.objects.filter(id=test_id, assigned_groups__id__in=user_groups_ids).exists():
+            messages.error(request, "Este test no está asignado a ninguno de tus grupos.")
+            return redirect('test_list')
+    else:
+            return redirect('test_list')
+    else:
+        messages.error(request, "No tienes permiso para acceder a los tests.")
+        return redirect('simple_login')
+
+    service = TestAttemptService(request.user, test, request.session, request.POST if request.method == 'POST' else None)
         request.session['current_test_id'] = test.id
         request.session['current_question_index'] = 0
     else:
         attempt = get_object_or_404(Attempt, id=request.session['attempt_id'])
 
-    if request.session['current_question_index'] >= total_questions:
-        return redirect('test_review', test_id=test.id, attempt_id=attempt.id)
-
-    current_question = questions[request.session['current_question_index']]
-    answered = Answer.objects.filter(attempt=attempt, question=current_question).exists()
-
     if request.method == 'POST':
+        process_results = service.process_post_request()
 
-        if request.POST.get('force_finish') == 'true':
-            answered_questions = Answer.objects.filter(attempt=attempt).values_list('question_id', flat=True)
-            unanswered_questions = [q for q in questions if q.id not in answered_questions]
-
-            for question in unanswered_questions:
-                data = {
-                    "attempt": attempt,
-                    "question": question,
-                    "user": request.user,
-                }
-
-                if question.response_format == 'text':
-                    data["answer_text"] = ""
-                elif question.response_format == 'number':
-                    data["answer_number"] = None
-                elif question.response_format == 'choice':
-                    data["answer_choice"] = None
-
-                Answer.objects.create(**data)
-
-            request.session['current_question_index'] = len(questions)
-            attempt.end_time = now()
-            attempt.save()
-            return redirect('test_review', test_id=test.id, attempt_id=attempt.id)
-
-        if current_question.response_format == 'text':
-            answer_text = request.POST.get(f'question_{current_question.id}')
-            if answer_text:
-                Answer.objects.create(
-                    attempt=attempt,
-                    question=current_question,
-                    answer_text=answer_text,
-                    user=request.user
-                )
-
-        elif current_question.response_format == 'number':
-            answer_number = request.POST.get(f'question_{current_question.id}')
-            if answer_number:
-                Answer.objects.create(
-                    attempt=attempt,
-                    question=current_question,
-                    answer_number=int(answer_number),
-                    user=request.user
-                )
-
-        elif current_question.response_format == 'choice':
-            answer_choice_id = request.POST.get(f'question_{current_question.id}')
-            if answer_choice_id:
-                answer_choice = Choice.objects.get(id=answer_choice_id)
-                Answer.objects.create(
+        if process_results['status'] == 'redirect':
+            return redirect(reverse(process_results['view_name'], kwargs=process_results['kwargs']))
+        elif process_results['status'] == 'validation_error':
+            context = service.get_current_state() 
+            context['error'] = process_results['message']
                     attempt=attempt,
                     question=current_question,
                     answer_choice=answer_choice,
@@ -138,50 +107,77 @@ def test_review(request, test_id, attempt_id):
             correct_answer = answer.question.correct_answer or "No disponible"
             if not answer.answer_text:  
                 is_correct = False 
-            elif answer.question.correct_answer:
-                is_correct = answer.answer_text == answer.question.correct_answer
-            else:
-                is_correct = None
-        elif answer.question.response_format == 'number':
-            correct_answer = answer.question.correct_answer if answer.question.correct_answer is not None else None
-            if answer.answer_number is not None and correct_answer is not None:
-                is_correct = float(answer.answer_number) == float(correct_answer)
+                'attempt': context['attempt'],
+                'current_question': context['current_question'],
+                'question_number': context['question_number'],
+                'answered': context['answered'],
+                'total_questions': context['total_questions'],
+                'user_answer_data': context['user_answer_data'],
+                'allow_backtracking': context['allow_backtracking'],
+                'error': context['error']
+            })
+    
+    context = service.get_current_state()
 
-        if is_correct:
-            total_correct += 1
-            if scoring:
-                question_score = scoring.points_per_difficulty * answer.question.difficulty
-        else:
-            if scoring and scoring.penalty_for_incorrect:
-                question_score = -scoring.fixed_penalty if scoring.fixed_penalty else 0
+    if context['status'] == 'finished':
+        return redirect('test_review', test_id=test.id, attempt_id=context['attempt_id'])
 
-        total_score += question_score
-
-        if answer.question.response_format == 'choice':
-            user_answer = answer.answer_choice.text if answer.answer_choice else 'Sin respuesta'
-        elif answer.question.response_format == 'text':
-            user_answer = answer.answer_text if answer.answer_text else 'Sin respuesta'
-        elif answer.question.response_format == 'number':
-            user_answer = answer.answer_number if answer.answer_number is not None else None
-
-        question_results.append({
-            'question': answer.question,
-            'user_answer': user_answer,
-            'correct_answer': correct_answer,
-            'is_correct': is_correct,
-            'question_score': question_score,
-        })
-    attempt.score = total_score
-    attempt.correct_count = total_correct
-    attempt.save()
-
-    return render(request, 'tests/test_review.html', {
+    return render(request, 'tests/test_detail.html', {
         'test': test,
-        'total_correct': total_correct,
-        'total_questions': total_questions,
-        'total_score': total_score,
-        'question_results': question_results,
+        'attempt': context['attempt'],
+        'current_question': context['current_question'],
+        'question_number': context['question_number'],
+        'answered': context['answered'],
+        'total_questions': context['total_questions'],
+        'user_answer_data': context['user_answer_data'],
+        'allow_backtracking': context['allow_backtracking'],
+        'error': context['error']
     })
+
+@login_required
+def test_detail_teacher(request, test_id):
+    if not is_teacher_or_staff(request.user):
+        messages.error(request, "No tienes permiso para ver los detalles de tests de profesor.")
+        return redirect('test_list')
+
+    test = get_object_or_404(Test, pk=test_id)
+    questions = test.questions.all().order_by('id')
+
+    context = {
+        'test': test,
+        'questions': questions,
+    }
+    return render(request, 'tests/test_detail_teacher.html', context)
+
+@login_required
+def test_review(request, test_id, attempt_id):
+    test = get_object_or_404(Test, id=test_id)
+    attempt = get_object_or_404(Attempt, id=attempt_id)
+
+    is_current_user_teacher_or_staff = is_teacher_or_staff(request.user)
+
+    if not is_current_user_teacher_or_staff:
+        if attempt.user != request.user:
+            messages.error(request, "No tienes permiso para ver este intento.")
+            return redirect('test_attempts')
+    else:
+        if not request.user.is_staff and test.creator != request.user:
+            messages.error(request, "No tienes permiso para ver los resultados de este test (no lo creaste tú).")
+            return redirect('test_attempts')
+
+    review_service = TestReviewService(test_id, attempt_id)
+    review_results = review_service.calculate_review_results()
+
+    context = {
+        'test': review_results['test'],
+        'total_correct': review_results['total_correct'],
+        'total_questions': review_results['total_questions'],
+        'total_score': review_results['total_score'],
+        'question_results': review_results['question_results'],
+        'is_teacher_user': is_current_user_teacher_or_staff,
+    }
+    return render(request, 'tests/test_review.html', context)
+
 
 @login_required
 def test_attempts(request):

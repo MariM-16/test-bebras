@@ -4,18 +4,23 @@
 {% block title %}Detalles del Test{% endblock %}
 
 {% block content %}
-    
-
     <h1>{{ test.name }}</h1>
 
     <div class="test-layout">
         <div class="card card-lateral left">
             <p><strong>Duración máxima:</strong> {{ test.maximum_time }}</p>
-            <div class="timer" data-time-limit="{{ test.maximum_time.total_seconds }}" data-test-id="{{ test.id }}" data-attempt-id="{{ attempt.id }}" data-allow-backtracking="{{ test.allow_backtracking|yesno:'true,false' }}">
-                       ⏳ <strong>Tiempo restante:</strong> <span id="timer" style="font-weight: bold; color: #d9534f;"></span>
+            <div class="timer" data-time-limit="{{ test.maximum_time.total_seconds }}" data-test-id="{{ test.id }}" data-attempt-id="{{ attempt.id }}" data-allow-backtracking="{{ test.allow_backtracking|yesno:'true,false' }}" data-allow-no-response="{{ test.allow_no_response|yesno:'true,false' }}">
+                       ⏳ <strong>Tiempo restante:</strong> <span id="timer" class="timer-display"></span> 
             </div>
             <p><strong>¿Permitir retroceder?</strong> 
                 {% if test.allow_backtracking %}
+                    Sí
+                {% else %}
+                    No
+                {% endif %}
+            </p>
+            <p><strong>¿Permite no responder?</strong> 
+                {% if test.allow_no_response %}
                     Sí
                 {% else %}
                     No
@@ -25,32 +30,35 @@
 
         <div class="test-card-container">
             <div class="question-card">
-                <h3>Pregunta {{ question_number }} de {{ test.questions.count }}</h3>
+                <h3>Pregunta {{ question_number }} de {{ total_questions }}</h3>
                 <form method="POST" action="" id="test-form">
                     {% csrf_token %}
 
-                    <h4>{{ current_question.statement|safe }}</h4>
+                    <p>{{ current_question.statement|safe }}</p>
 
                     {% if current_question.response_format == 'text' %}
                         <div class="answer-space">
-                            <input type="text" name="question_{{ current_question.id }}" required>
+                            <input type="text" name="question_{{ current_question.id }}" value="{{ user_answer_data|default_if_none:'' }}">
                         </div>
                     {% elif current_question.response_format == 'number' %}
                         <div class="answer-space">
-                            <input type="number" name="question_{{ current_question.id }}" required>
-                        </div>
+                            <input type="number" name="question_{{ current_question.id }}" value="{{ user_answer_data|default_if_none:'' }}">                        </div>
                     {% elif current_question.response_format == 'choice' %}
                         <div class="answer-space choices">
                             {% for choice in current_question.choices.all %}
                                 <label>
-                                    <input type="radio" name="question_{{ current_question.id }}" value="{{ choice.id }}">
+                                    <input type="radio" name="question_{{ current_question.id }}" value="{{ choice.id }}" {% if user_answer_data == choice.id %}checked{% endif %}>
                                     {{ choice.text|safe }}
                                 </label><br>
                             {% endfor %}
                         </div>
                     {% endif %}
-
-                    <button type="submit" class="btn-next" disabled>Siguiente</button>
+                    <div class="navigation-buttons">
+                        {% if allow_backtracking and question_number > 1 %}
+                            <button type="submit" name="previous_question" class="btn-prev">Anterior</button>
+                        {% endif %}
+                        <button type="submit" name="next_question" class="btn-next" {% if not allow_no_response and not answered %}disabled{% endif %}>Siguiente</button>
+                    </div>
                 </form>
             </div>
         </div>
@@ -73,4 +81,3 @@
 
     <script src="{% static 'js/test_logic.js' %}"></script>
 {% endblock %}
-

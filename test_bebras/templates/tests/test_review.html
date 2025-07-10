@@ -1,42 +1,78 @@
 {% extends 'base_generic.html' %}
+{% load static %}
 
 {% block title %}Resumen del Test{% endblock %}
 
 {% block content %}
     <div class="container">
         <h3 class="text-center">Resumen del Test</h3>
+        <h4 class="text-center">{{ test.name }}</h4>
         
-        <div class="card-container">
-            {% for result in question_results %}
-                <div class="card">
-                    <h4>Pregunta {{ forloop.counter }}</h4>
-                    <p><strong>{{ result.question.statement|safe }}</strong></p>
-                    
-                    <p><strong>Tu respuesta:</strong> 
-                        {% if result.user_answer %}
-                            {{ result.user_answer|safe }}
-                        {% else %}
-                            <em>No respondida</em>
-                        {% endif %}
+        <div class="test-review-layout">
+            <div class="card card-lateral review-summary-card">
+                <h4>Resultados Generales</h4>
+                <p><strong>Preguntas Correctas:</strong> <span class="correct">{{ total_correct }}</span> / {{ total_questions }}</p>
+                
+                {% if is_teacher_user %}
+                    <p><strong>Puntuación Total:</strong>
+                        <span class="badge {% if total_score >= 80 %}bg-success{% elif total_score >= 60 %}bg-warning{% else %}bg-danger{% endif %}">
+                            {{ total_score|floatformat:2 }}%
+                        </span>
                     </p>
-                    {% if result.is_correct is True %}
-                        <p class="correct">✅ Correcto</p>
-                    {% elif result.is_correct is False %}
-                        <p class="incorrect">❌ Incorrecto</p>
-                    {% else %}
-                        <p class="pending">🔵 Por corregir</p>
-                    {% endif %}
-                    <p><strong>Habilidades evaluadas</strong></p>
-                    {% for skill in result.question.skills.all %}
-                        <li>{{ skill.name }}</li>
-                    {% endfor %}
-                  
+                {% endif %}
+                
+                <div class="result-buttons">
+                    <a href="{% url 'test_list' %}" class="btn btn-primary">Volver a tests</a>
+                    <a href="{% url 'test_attempts' %}" class="btn btn-secondary">Ver todos los intentos</a>
                 </div>
-            {% endfor %}
+            </div>
+
+            <div class="card-container review-questions-container">
+                {% for result in question_results %}
+                    <div class="card question-review-card">
+                        <h4>Pregunta {{ forloop.counter }}</h4>
+                        <p class="question-statement">{{ result.question.statement|safe }}</p>
+                        
+                        <div class="answer-details">
+                            <p><strong>Tu respuesta:</strong> 
+                                {% if result.user_answer and result.user_answer != "Sin respuesta" %}
+                                    <span class="user-answer-text">{{ result.user_answer|safe }}</span>
+                                {% else %}
+                                    <em class="no-answer-text">No respondida</em>
+                                {% endif %}
+                            </p>
+                            {% if is_teacher_user %}
+                                {% if result.is_correct == False or not result.user_answer %}
+                                    <p><strong>Respuesta Correcta:</strong> 
+                                        <span class="correct-answer-text">{{ result.correct_answer|safe }}</span>
+                                    </p>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+
+                        {% if result.is_correct is True %}
+                            <p class="result-status correct">✅ Correcto</p>
+                        {% elif result.is_correct is False %}
+                            <p class="result-status incorrect">❌ Incorrecto</p>
+                        {% else %}
+                            <p class="result-status pending">🔵 Por corregir</p>
+                        {% endif %}
+                        
+                        {% if is_teacher_user %}
+                            <p><strong>Puntuación de la pregunta:</strong> <span class="badge bg-secondary">{{ result.question_score|floatformat:2 }}</span></p>
+                        {% endif %}
+
+                        {% if result.question.skills.exists %}
+                            <p><strong>Habilidades evaluadas:</strong></p>
+                            <ul class="skills-list">
+                                {% for skill in result.question.skills.all %}
+                                    <li>{{ skill.name }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
         </div>
-        <h4 class="text-center">Total de respuestas correctas: {{ total_correct }} / {{ total_questions }}</h4>
-        <a href="{% url 'test_list' %}" class="btn-outline">Volver a la lista de tests</a>
     </div>
-
 {% endblock %}
-

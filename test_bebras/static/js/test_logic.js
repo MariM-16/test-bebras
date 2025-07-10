@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
     const form = document.getElementById("test-form");
-    const button = document.querySelector(".btn-next");
+    const nextButton = form.querySelector(".btn-next");
     const inputs = form.querySelectorAll("input");
     const timerElement = document.getElementById("timer");
     const timerContainer = document.querySelector(".timer");
@@ -9,13 +9,19 @@ document.addEventListener("DOMContentLoaded", function () {
     const testId = timerContainer.dataset.testId;
     const attemptId = timerContainer.dataset.attemptId;
     const allowBacktracking = timerContainer.dataset.allowBacktracking === "true";
+    const allowNoResponse = timerContainer.dataset.allowNoResponse === "true";
 
     const storageKey = `timeLeft-${testId}-${attemptId}`;
 
     const savedTimeLeft = localStorage.getItem(storageKey);
     let timeLeft = savedTimeLeft ? parseInt(savedTimeLeft, 10) : totalTestTime;
-
+    
     function checkInput() {
+        if (allowNoResponse) {
+            nextButton.disabled = false;
+            return;
+        }
+
         let isFilled = false;
         inputs.forEach(input => {
             if ((input.type === "radio" && input.checked) ||
@@ -23,13 +29,16 @@ document.addEventListener("DOMContentLoaded", function () {
                 isFilled = true;
             }
         });
-        button.disabled = !isFilled;
-    }
+    
+        nextButton.disabled = !isFilled;
+    }    
 
     inputs.forEach(input => {
         input.addEventListener("input", checkInput);
         input.addEventListener("change", checkInput);
     });
+
+    checkInput(); 
 
     if (!allowBacktracking) {
         window.history.pushState(null, "", window.location.href);
@@ -46,23 +55,17 @@ document.addEventListener("DOMContentLoaded", function () {
         if (timeLeft <= 0) {
             clearInterval(timerInterval);
             localStorage.removeItem(storageKey);
-            form.submit();
-            handleTimeout();
+            handleTimeout()
         } else {
             localStorage.setItem(storageKey, timeLeft);
             timeLeft--;
         }
     }
 
-    // Limpiar tiempo si el usuario envía el formulario (termina el test)
-    form.addEventListener("submit", function () {
-        localStorage.removeItem(storageKey);
-    });
-
     let timerInterval = setInterval(updateTimer, 1000);
 
     Object.keys(localStorage).forEach(function(key) {
-        if (key.startsWith("timeLeft-")) {
+        if (key.startsWith("timeLeft-") && !key.includes(`${testId}-${attemptId}`)) {
             localStorage.removeItem(key);
         }
     });

@@ -4,12 +4,29 @@
 
 {% block content %}
     <h3>Lista de Tests</h3>
+
+    {% if user.is_staff %} 
+        <div class="create-test-button-wrapper">
+            <form action="{% url 'auto_test_create' %}" method="get" class="create-test-form">
+                <button type="submit" class="btn btn-primary">
+                    Crear Nuevo Test
+                </button>
+            </form>
+        </div>
+    {% endif %}
+
     <div class="tests-card-container">
         {% for test in tests %}
             <div class="tests-card">
                 <h4>{{ test.name }}</h4>
-                <a href="{% url 'test_detail' test.id %}" class="btn-outline">Ver test</a>            
+                {% if user.is_staff %}
+                    <a href="{% url 'test_detail_teacher' test.id %}" class="btn-outline">Ver Detalles</a>
+                {% else %}
+                    <a href="{% url 'test_detail' test.id %}" class="btn-outline">Ver test</a>            
+                {% endif %}
             </div>
+        {% empty %}
+            <p>No hay tests disponibles en este momento.</p>
         {% endfor %}
     </div>
 {% endblock %}
