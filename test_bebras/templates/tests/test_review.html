@@ -42,7 +42,7 @@
                                 {% endif %}
                             </p>
                             {% if is_teacher_user %}
-                                {% if result.is_correct == False or not result.user_answer %}
+                                {% if result.status != 'correct' %}
                                     <p><strong>Respuesta Correcta:</strong> 
                                         <span class="correct-answer-text">{{ result.correct_answer|safe }}</span>
                                     </p>
@@ -50,14 +50,14 @@
                             {% endif %}
                         </div>
 
-                        {% if result.is_correct is True %}
+                        {% if result.is_correct_auto is True %}
                             <p class="result-status correct">✅ Correcto</p>
-                        {% elif result.is_correct is False %}
+                        {% elif result.is_correct_auto is False %}
                             <p class="result-status incorrect">❌ Incorrecto</p>
-                        {% else %}
-                            <p class="result-status pending">🔵 Por corregir</p>
+                        {% elif result.status == 'pending' %}
+                            <p class="result-status pending">🔵 Pendiente de revisión</p>
                         {% endif %}
-                        
+
                         {% if is_teacher_user %}
                             <p><strong>Puntuación de la pregunta:</strong> <span class="badge bg-secondary">{{ result.question_score|floatformat:2 }}</span></p>
                         {% endif %}

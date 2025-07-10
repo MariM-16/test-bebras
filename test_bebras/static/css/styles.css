@@ -563,10 +563,9 @@ body.base-layout {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-    align-items: center;
     justify-content: center;
     line-height: 1.5;
-    min-height: 150px;
+    min-height: 20%;
     width: 100%;
     box-sizing: border-box;
 }

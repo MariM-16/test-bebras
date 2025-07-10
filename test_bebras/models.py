@@ -66,7 +66,6 @@ class Answer(models.Model):
     GRADE_STATUS_CHOICES = [
         ('pending', 'Pendiente de Revisión'),
         ('graded', 'Corregida'),
-        ('not_applicable', 'No Aplica (auto-corregida)'),
     ]
     grade_status = models.CharField(
         max_length=20, 
