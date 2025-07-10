@@ -104,6 +104,9 @@ class TestAttemptService:
         return {'status': 'redirect', 'view_name': 'test_review', 'kwargs': {'test_id': self.test.id, 'attempt_id': self.attempt.id}}
 
     def _handle_next_question(self):
+        if self.current_question_index >= self.total_questions:
+            return {'status': 'finished', 'attempt_id': self.attempt.id}
+
         current_question = self.questions[self.current_question_index]
         Answer.objects.filter(attempt=self.attempt, question=current_question).delete()
 
@@ -145,8 +148,16 @@ class TestAttemptService:
 
         with transaction.atomic():
             Answer.objects.create(**answer_data)
+        
         self.session['current_question_index'] += 1
-        return {'status': 'redirect', 'view_name': 'test_detail', 'kwargs': {'test_id': self.test.id}}
+        
+        if self.session['current_question_index'] >= self.total_questions:
+            self.attempt.end_time = now()
+            self.attempt.save()
+            return {'status': 'redirect', 'view_name': 'test_review', 'kwargs': {'test_id': self.test.id, 'attempt_id': self.attempt.id}}
+        else:
+            return {'status': 'redirect', 'view_name': 'test_detail', 'kwargs': {'test_id': self.test.id}}
+
 
     def _handle_previous_question(self):
         if self.current_question_index > 0:
