@@ -1,0 +1,104 @@
+{% extends 'base_generic.html' %}
+
+{% block title %}Panel de Estadísticas{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-2">Estadísticas de Rendimiento</h2>
+    <p class="lead mb-4">
+        {% if selected_group %}
+            <span class="badge bg-primary me-2 fs-6">Grupo: {{ selected_group.name }}</span>
+        {% endif %}
+        {% if selected_test %}
+            <span class="badge bg-success fs-6">Test: {{ selected_test.name }}</span>
+        {% endif %}
+        {% if not selected_group and not selected_test %}
+            Resultados generales de todos los tests y grupos.
+        {% endif %}
+    </p>
+
+    <div class="mb-4 d-flex justify-content-between align-items-center">
+        <a href="{% url 'test_attempts' %}" class="btn btn-secondary">Volver a Resumen de Intentos</a>
+        {% if selected_group %}
+            <a href="{% url 'group_history_results' selected_group.id %}" class="btn btn-primary">Volver al Histórico del Grupo</a>
+        {% endif %}
+    </div>
+
+    <div class="row d-flex align-items-stretch">
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Intentos por Usuario</h5>
+                </div>
+                <div class="card-body"> 
+                    {% if user_attempt_counts %}
+                        <div class="table-responsive user-attempts-table"> 
+                            <table class="table table-striped"> 
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Usuario</th>
+                                        <th scope="col">Intentos</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for user_data in user_attempt_counts %}
+                                        <tr>
+                                            <td>{{ user_data.username }}</td>
+                                            <td>{{ user_data.attempts }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center mt-3">No hay datos de intentos para mostrar.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Rendimiento General (Respondidas vs Correctas vs Incorrectas)</h5>
+                </div>
+                <div class="card-body general-performance-chart-container"> 
+                    <div class="chart-canvas-wrapper"> 
+                        <canvas id="overallPerformanceChart"></canvas>
+                    </div>
+                    {% if overall_performance.total_attempts_count == 0 %}
+                        <p class="text-muted text-center mt-3">No hay datos generales de rendimiento para mostrar.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Rendimiento por Habilidad Evaluada</h5>
+                </div>
+                <div class="card-body skill-performance-chart-container">
+                    <canvas id="skillPerformanceChart"></canvas>
+                    {% if not skill_performance_data_json or skill_performance_data_json == '[]' %}
+                        <p class="text-muted text-center mt-3">No hay datos de rendimiento por habilidad para mostrar.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script type="application/json" data-id="user_attempt_counts_json">
+    {{ user_attempt_counts_json|safe }}
+</script>
+<script type="application/json" data-id="overall_performance_json">
+    {{ overall_performance_json|safe }}
+</script>
+<script type="application/json" data-id="skill_performance_data_json">
+    {{ skill_performance_data_json|safe }}
+</script>
+
+{% load static %}
+<script src="{% static 'js/statistics.js' %}"></script>
+{% endblock %}

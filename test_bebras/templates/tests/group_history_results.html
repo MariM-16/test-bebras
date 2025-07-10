@@ -1,0 +1,104 @@
+{% extends 'base_generic.html' %}
+
+{% block title %}Histórico del Grupo: {{ group.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Resultados Históricos para el Grupo: {{ group.name }}</h2>
+    <p class="lead">Un resumen del rendimiento de los estudiantes en los tests asignados a este grupo.</p>
+
+    <div class="mb-4 d-flex justify-content-between align-items-center"> 
+        <a href="{% url 'test_attempts' %}" class="btn btn-secondary">Volver a Resumen de Intentos</a>
+        <a href="{% url 'test_statistics_dashboard' %}?group={{ group.id }}" class="btn btn-info">Ver Estadísticas del Grupo</a>
+    </div>
+
+    <h3>Rendimiento General por Test</h3>
+    {% if test_summaries %}
+        <div class="table-responsive">
+            <table class="table table-hover table-striped align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th scope="col">Test</th>
+                        <th scope="col">Promedio del Grupo (%)</th>
+                        <th scope="col">Número Total de Intentos</th>
+                        <th scope="col">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for summary in test_summaries %}
+                        <tr>
+                            <td>{{ summary.name }}</td>
+                            <td>
+                                <span class="badge {% if summary.avg_score >= 80 %}bg-success{% elif summary.avg_score >= 60 %}bg-warning{% else %}bg-danger{% endif %}">
+                                    {{ summary.avg_score|floatformat:2 }}%
+                                </span>
+                            </td>
+                            <td>{{ summary.total_attempts }}</td>
+                            <td>
+                                <a href="{% url 'test_statistics_dashboard' %}?group={{ group.id }}&test={{ summary.id }}" class="btn btn-sm btn-outline-info">Estadísticas del Test</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="alert alert-info text-center" role="alert">
+            No hay datos de tests completados para este grupo.
+        </div>
+    {% endif %}
+
+    <h3 class="mt-5">Rendimiento Detallado por Estudiante</h3>
+    {% if student_results %}
+        <div class="accordion" id="studentResultsAccordion">
+            {% for sr in student_results %}
+                <div class="accordion-item">
+                    <h4 class="accordion-header" id="headingStudent-{{ sr.student.id }}">
+                        <button class="accordion-button {% if forloop.first %} {% else %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapseStudent-{{ sr.student.id }}" aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}" aria-controls="collapseStudent-{{ sr.student.id }}">
+                            {{ sr.student.get_full_name|default:sr.student.username }} ({{ sr.attempts|length }} intento{{ sr.attempts|length|pluralize }})
+                        </button>
+                    </h4>
+                    <div id="collapseStudent-{{ sr.student.id }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" aria-labelledby="headingStudent-{{ sr.student.id }}" data-bs-parent="#studentResultsAccordion">
+                        <div class="accordion-body">
+                            {% if sr.attempts %}
+                                <table class="table table-sm table-borderless">
+                                    <thead>
+                                        <tr>
+                                            <th>Test</th>
+                                            <th>Fecha</th>
+                                            <th>Puntuación</th>
+                                            <th>Acción</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for attempt in sr.attempts %}
+                                            <tr>
+                                                <td>{{ attempt.test.name }}</td>
+                                                <td>{{ attempt.date_taken|date:"d M Y, H:i" }}</td>
+                                                <td>
+                                                    <span class="badge {% if attempt.score >= 80 %}bg-success{% elif attempt.score >= 60 %}bg-warning{% else %}bg-danger{% endif %}">
+                                                        {{ attempt.score|floatformat:2 }}%
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <a href="{% url 'test_review' attempt.test.id attempt.id %}" class="btn btn-sm btn-outline-primary">Ver</a>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            {% else %}
+                                <p class="text-muted">Este estudiante no ha completado ningún test.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info text-center" role="alert">
+            No hay estudiantes en este grupo o no han realizado tests.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
