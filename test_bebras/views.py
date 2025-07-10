@@ -21,6 +21,7 @@ from django.db.models import Avg, Sum, Count
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.contrib.auth import get_user_model
+from decimal import Decimal, InvalidOperation
 from .services.excel_exporter import generate_attempts_xlsx_report
 from .services.test_assignment_service import assign_tests_and_notify
 from .services.test_attempt_service import TestAttemptService
@@ -300,10 +301,12 @@ def group_detail_view(request, group_id):
 
                 if send_notification_email and student_emails_for_notification:
                     assigned_test_names = [test.name for test in selected_tests]
+                    test_names_list = "\n".join([f"- {name}" for name in  assigned_test_names])
                     context_email = {
                         'group_name': target_group.name,
-                        'tests': assigned_test_names,
+                        'assigned_tests_list': test_names_list,
                         'custom_message': email_message,
+                        'teacher_name': request.user,
                         'platform_url': request.build_absolute_uri(reverse('test_list'))
                     }
                     html_message = render_to_string('emails/test_assignment_notification.html', context_email)
@@ -382,12 +385,15 @@ def auto_test_creation_view(request):
 
             total_time = timedelta(hours=maximum_time_hours, minutes=maximum_time_minutes)
 
-            final_points_per_difficulty = form_points_per_difficulty if form_points_per_difficulty is not None else {}
-            if not final_points_per_difficulty:
-                final_points_per_difficulty = {str(i): Decimal('1.0') for i in range(1, 8)}
+            points_data_for_json = {}
+            if form_points_per_difficulty:
+                points_data_for_json = {k: float(v) for k, v in form_points_per_difficulty.items()}
             else:
-                final_points_per_difficulty = {k: Decimal(str(v)) for k, v in final_points_per_difficulty.items()}
+                points_data_for_json = {str(i): 1.0 for i in range(1, 8)} 
 
+            penalty_data_for_json = {}
+            if penalty_by_difficulty_data:
+                penalty_data_for_json = {k: float(v) for k, v in penalty_by_difficulty_data.items()}
 
             new_test = Test.objects.create(
                 name=name,
@@ -395,7 +401,7 @@ def auto_test_creation_view(request):
                 allow_backtracking=allow_backtracking,
                 allow_no_response=allow_no_response,
                 max_attempts=max_attempts,
-                points_per_difficulty=final_points_per_difficulty,
+                points_per_difficulty= points_data_for_json,
                 penalty_type=penalty_type,
                 fixed_penalty=fixed_penalty,
                 penalty_by_difficulty=penalty_by_difficulty_data if penalty_type == 'by_difficulty' else None,
