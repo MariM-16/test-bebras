@@ -32,24 +32,21 @@ class Choice(models.Model):
     def __str__(self):
         return self.text
 
-class ScoringConfiguration(models.Model):
-    question = models.OneToOneField(Question, on_delete=models.CASCADE)
-    points_per_difficulty = models.IntegerField()
-    penalty_for_incorrect = models.BooleanField(default=False)
-    fixed_penalty = models.IntegerField(blank=True, null=True)
-    allow_no_response = models.BooleanField(default=True)
-
-    def __str__(self):
-        return f'Configuration for {self.question}'
-
 class Test(models.Model):
     name = models.CharField(max_length=100)
     questions = models.ManyToManyField(Question)
     maximum_time = models.DurationField()
     allow_backtracking = models.BooleanField(default=True)
+    allow_no_response = models.BooleanField(default=True)
+
+    points_per_difficulty = models.JSONField(default=dict)
+    penalty_type = models.CharField(max_length=20, choices=[('fixed', 'Fixed'), ('by_difficulty', 'By Difficulty')], default='fixed')
+    fixed_penalty = models.IntegerField(blank=True, null=True)
+    penalty_by_difficulty = models.JSONField(default=dict, blank=True, null=True)
 
     def __str__(self):
         return self.name
+
 
 class Answer(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
