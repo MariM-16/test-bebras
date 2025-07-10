@@ -8,14 +8,18 @@ from collections import defaultdict
 from django.db.models import Q
 from django.contrib import messages
 from datetime import timedelta
+from django.utils import timezone 
 from django import forms
 from .forms import AutoTestCreationForm, StudentUploadForm, AssignTestForm
 import random
 import json
 import csv
 import io
+from django.core.mail import send_mail
+from django.conf import settings
 from django.db.models import Avg, Sum, Count
-
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
 from django.contrib.auth import get_user_model
 from .services.excel_exporter import generate_attempts_xlsx_report
 from .services.test_assignment_service import assign_tests_and_notify
@@ -78,6 +82,15 @@ def test_detail(request, test_id):
     context = service.get_current_state()
 
     if context['status'] == 'finished':
+        attempt_id = context['attempt_id']
+        try:
+            attempt = Attempt.objects.get(id=attempt_id)
+            if attempt.end_time is None: 
+                attempt.end_time = timezone.now()
+                attempt.save()
+        except Attempt.DoesNotExist:
+            messages.error(request, "Error: No se encontró el intento del test para finalizar.")
+
         return redirect('test_review', test_id=test.id, attempt_id=context['attempt_id'])
 
     return render(request, 'tests/test_detail.html', {
@@ -91,6 +104,7 @@ def test_detail(request, test_id):
         'allow_backtracking': context['allow_backtracking'],
         'error': context['error']
     })
+
 
 @login_required
 def test_detail_teacher(request, test_id):
@@ -340,8 +354,9 @@ def auto_test_creation_view(request):
             maximum_time_minutes = form.cleaned_data['maximum_time_minutes']
             allow_backtracking = form.cleaned_data['allow_backtracking']
             allow_no_response = form.cleaned_data['allow_no_response']
-            
-            points_per_question = form.cleaned_data['points_per_question']
+            max_attempts = form.cleaned_data['max_attempts']
+
+            form_points_per_difficulty = form.cleaned_data['points_per_difficulty']
             penalty_type = form.cleaned_data['penalty_type']
             fixed_penalty = form.cleaned_data['fixed_penalty']
             penalty_by_difficulty_data = form.cleaned_data.get('penalty_by_difficulty')
@@ -367,14 +382,20 @@ def auto_test_creation_view(request):
 
             total_time = timedelta(hours=maximum_time_hours, minutes=maximum_time_minutes)
 
-            points_config = {str(i): points_per_question for i in range(1, 8)}
+            final_points_per_difficulty = form_points_per_difficulty if form_points_per_difficulty is not None else {}
+            if not final_points_per_difficulty:
+                final_points_per_difficulty = {str(i): Decimal('1.0') for i in range(1, 8)}
+            else:
+                final_points_per_difficulty = {k: Decimal(str(v)) for k, v in final_points_per_difficulty.items()}
+
 
             new_test = Test.objects.create(
                 name=name,
                 maximum_time=total_time,
                 allow_backtracking=allow_backtracking,
                 allow_no_response=allow_no_response,
-                points_per_difficulty=points_config,
+                max_attempts=max_attempts,
+                points_per_difficulty=final_points_per_difficulty,
                 penalty_type=penalty_type,
                 fixed_penalty=fixed_penalty,
                 penalty_by_difficulty=penalty_by_difficulty_data if penalty_type == 'by_difficulty' else None,

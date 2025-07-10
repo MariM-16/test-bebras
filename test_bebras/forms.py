@@ -27,6 +27,13 @@ class AutoTestCreationForm(forms.Form):
         initial=1,
         help_text='Establece el número máximo de veces que un estudiante puede intentar este test. Por defecto es 1.'
     )
+
+    points_per_difficulty = forms.CharField(
+        label='Puntos por dificultad (JSON, ej: {"1": 10, "2": 20}). Opcional si solo hay una dificultad.',
+        required=False,
+        widget=forms.Textarea(attrs={'rows': 3, 'placeholder': '{"1": 10, "2": 20, "3": 30}'})
+    )
+
     penalty_type = forms.ChoiceField(
         label='Tipo de penalización por respuesta incorrecta/sin respuesta (si no permitido)',
         choices=[('none', 'Ninguna'), ('fixed', 'Fija'), ('by_difficulty', 'Por Dificultad')],
@@ -41,9 +48,6 @@ class AutoTestCreationForm(forms.Form):
         widget=forms.Textarea(attrs={'rows': 3, 'placeholder': '{"1": 1, "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7}'})
     )
 
-    points_per_question = forms.DecimalField(label='Puntos por pregunta correcta (por defecto para todas las dificultades)', max_digits=5, decimal_places=2, initial=1.0)
-
-
     def clean_penalty_by_difficulty(self):
         data = self.cleaned_data['penalty_by_difficulty']
         if data:
@@ -57,13 +61,29 @@ class AutoTestCreationForm(forms.Form):
                 return json_data
             except json.JSONDecodeError:
                 raise forms.ValidationError("Formato JSON inválido para la penalización por dificultad.")
-        return None 
+        return None
+
+    def clean_points_per_difficulty(self):
+        data = self.cleaned_data['points_per_difficulty']
+        if data:
+            try:
+                json_data = json.loads(data)
+                for k, v in json_data.items():
+                    if not k.isdigit() or not (1 <= int(k) <= 7):
+                        raise forms.ValidationError("Las claves de puntos por dificultad deben ser números del 1 al 7.")
+                    if not isinstance(v, (int, float)):
+                        raise forms.ValidationError("Los valores de puntos por dificultad deben ser numéricos.")
+                return json_data
+            except json.JSONDecodeError:
+                raise forms.ValidationError("Formato JSON inválido para puntos por dificultad.")
+        return None
 
     def clean(self):
         cleaned_data = super().clean()
         penalty_type = cleaned_data.get('penalty_type')
         fixed_penalty = cleaned_data.get('fixed_penalty')
         penalty_by_difficulty = cleaned_data.get('penalty_by_difficulty')
+        points_per_difficulty = cleaned_data.get('points_per_difficulty')
 
         if penalty_type == 'fixed' and fixed_penalty is None:
             self.add_error('fixed_penalty', 'Este campo es requerido cuando el tipo de penalización es Fija.')
@@ -71,6 +91,9 @@ class AutoTestCreationForm(forms.Form):
         if penalty_type == 'by_difficulty' and not penalty_by_difficulty:
             self.add_error('penalty_by_difficulty', 'Este campo es requerido cuando el tipo de penalización es Por Dificultad.')
         
+        if not points_per_difficulty:
+            pass
+
         return cleaned_data
 
 class StudentUploadForm(forms.Form):
