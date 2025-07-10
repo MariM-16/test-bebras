@@ -43,13 +43,16 @@
                     {% elif current_question.response_format == 'number' %}
                         <div class="answer-space">
                             <input type="number" name="question_{{ current_question.id }}" value="{{ user_answer_data|default_if_none:'' }}">                        </div>
+
                     {% elif current_question.response_format == 'choice' %}
                         <div class="answer-space choices">
                             {% for choice in current_question.choices.all %}
-                                <label>
+                                <label class="choice-item"> 
                                     <input type="radio" name="question_{{ current_question.id }}" value="{{ choice.id }}" {% if user_answer_data == choice.id %}checked{% endif %}>
-                                    {{ choice.text|safe }}
-                                </label><br>
+                                    <span class="choice-content">
+                                        {{ choice.text|safe }}
+                                    </span>
+                                </label><br> 
                             {% endfor %}
                         </div>
                     {% endif %}
