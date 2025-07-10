@@ -4,18 +4,57 @@
 
 {% block content %}
 <div class="container mt-5">
-    <h2 class="mb-4">Tus Resultados</h2>
+    <h2 class="mb-4">Resultados</h2>
+    {% if is_teacher_user %}
+        <form method="GET" class="mb-4 p-3 border rounded bg-light">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label for="group-filter" class="form-label">Filtrar por Grupo:</label>
+                    <select class="form-select" id="group-filter" name="group">
+                        <option value="">Todos los Grupos</option>
+                        {% for group in groups %}
+                            <option value="{{ group.id }}" {% if selected_group_id|stringformat:"s" == group.id|stringformat:"s" %}selected{% endif %}>
+                                {{ group.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="test-filter" class="form-label">Filtrar por Test:</label>
+                    <select class="form-select" id="test-filter" name="test">
+                        <option value="">Todos los Tests</option>
+                        {% for test_item in tests_available %}
+                            <option value="{{ test_item.id }}" {% if selected_test_id|stringformat:"s" == test_item.id|stringformat:"s" %}selected{% endif %}>
+                                {{ test_item.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end gap-2">
+                    <button type="submit" class="btn btn-primary flex-fill">Aplicar Filtros</button>
+                    <a href="{% url 'export_attempts_xlsx' %}{% if selected_group_id %}?group={{ selected_group_id }}{% if selected_test_id %}&test={{ selected_test_id }}{% endif %}{% elif selected_test_id %}?test={{ selected_test_id }}{% endif %}" class="btn btn-success flex-fill">Descargar XLSX</a>
+                </div>
+            </div>
+            {% if selected_group_id %}
+                <div class="row mt-3">
+                    <div class="col-12 text-center">
+                        <a href="{% url 'group_history_results' selected_group_id %}" class="btn btn-info">Visualizar resultado histórico del grupo</a>
+                    </div>
+                </div>
+            {% endif %}
+        </form>
+    {% endif %}
 
     {% if grouped_attempts %}
         <div class="accordion" id="attemptsAccordion">
             {% for test, attempts in grouped_attempts.items %}
                 <div class="accordion-item">
-                    <h3 class="accordion-header" id="heading-{{ forloop.counter }}">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{ forloop.counter }}" aria-expanded="false" aria-controls="collapse-{{ forloop.counter }}">
-                            {{ test.name }} ({{ attempts|length }} intento{{ attempts|length|pluralize }})
+                    <h3 class="accordion-header" id="heading-{{ test.id }}">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{ test.id }}" aria-expanded="false" aria-controls="collapse-{{ test.id }}">
+                            {{ test.name }} ({{ attempts|length }} respuesta{{ attempts|length|pluralize }})
                         </button>
                     </h3>
-                    <div id="collapse-{{ forloop.counter }}" class="accordion-collapse collapse" aria-labelledby="heading-{{ forloop.counter }}" data-bs-parent="#attemptsAccordion">
+                    <div id="collapse-{{ test.id }}" class="accordion-collapse collapse" aria-labelledby="heading-{{ test.id }}" data-bs-parent="#attemptsAccordion">
                         <div class="accordion-body">
                             <table class="table table-hover align-middle">
                                 <thead class="table-light">
@@ -32,7 +71,7 @@
                                     {% for attempt in attempts %}
                                         <tr>
                                             {% if show_user %}
-                                                <td>{{ attempt.user.username }}</td>
+                                                <td>{{ attempt.user.get_full_name|default:attempt.user.username }}</td>
                                             {% endif %}
                                             <td>{{ attempt.date_taken|date:"d M Y, H:i" }}</td>
                                             <td>
