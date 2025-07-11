@@ -16,13 +16,22 @@
     {% endif %}
 
     <div class="tests-card-container">
-        {% for test in tests %}
+        {% for item in tests %}
             <div class="tests-card">
-                <h4>{{ test.name }}</h4>
+                <h4>{{ item.test.name }}</h4>
+                {% if not user.is_staff %}
+                    Intentos realizados: {{ item.attempts_made }} / {{ item.test.max_attempts }}
+                    <p>Intentos restantes: {{ item.attempts_remaining }}</p>
+                {% endif %}
+
                 {% if user.is_staff %}
-                    <a href="{% url 'test_detail_teacher' test.id %}" class="btn-outline">Ver Detalles</a>
+                    <a href="{% url 'test_detail_teacher' item.test.id %}" class="btn-outline">Ver Detalles</a>
                 {% else %}
-                    <a href="{% url 'test_detail' test.id %}" class="btn-outline">Ver test</a>            
+                    {% if item.can_start_test %}
+                        <a href="{% url 'test_detail' item.test.id %}" class="btn-outline">Realizar Test</a>
+                    {% else %}
+                        <button class="btn-outline " disabled>Sin intentos</button>
+                    {% endif %}
                 {% endif %}
             </div>
         {% empty %}

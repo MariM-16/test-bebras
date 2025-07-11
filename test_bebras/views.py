@@ -30,16 +30,37 @@ from .utils.user_roles import is_teacher_or_staff, is_student
 
 @login_required
 def test_list(request):
+    user_tests = Test.objects.none() 
     if is_teacher_or_staff(request.user):
         if request.user.is_staff:
-            tests = Test.objects.all().order_by('name')
+            user_tests = Test.objects.all().order_by('name')
         else:
-            tests = Test.objects.filter(creator=request.user).order_by('name')
-    else:
+            user_tests = Test.objects.filter(creator=request.user).order_by('name')
+    else: 
         user_groups_ids = request.user.groups.values_list('id', flat=True)
-        tests = Test.objects.filter(assigned_groups__id__in=user_groups_ids).distinct().order_by('name')
+        user_tests = Test.objects.filter(assigned_groups__id__in=user_groups_ids).distinct().order_by('name')
 
-    return render(request, 'tests/test_list.html', {'tests': tests})
+    tests_with_attempt_info = []
+    for test in user_tests:
+        attempts_made = Attempt.objects.filter(user=request.user, test=test).count()
+        
+        attempts_remaining = test.max_attempts - attempts_made
+        can_start_test = attempts_remaining > 0
+        
+        tests_with_attempt_info.append({
+            'test': test,
+            'attempts_made': attempts_made,
+            'attempts_remaining': attempts_remaining,
+            'can_start_test': can_start_test
+        })
+
+    context = {
+        'tests': tests_with_attempt_info,
+    }
+    return render(request, 'tests/test_list.html', context)
+
+
+
 
 @login_required
 def test_detail(request, test_id):
@@ -455,8 +476,7 @@ def upload_students_view(request):
                     user, created = User.objects.get_or_create(email=student_email, defaults={
                         'username': student_email,
                         'first_name': first_name,
-                        'last_name': last_name,
-                        'password': User.objects.make_random_password()
+                        'last_name': last_name
                     })
                     
                     if created:
@@ -747,22 +767,5 @@ def simple_logout(request):
 def simple_login(request):
     if request.user.is_authenticated:
         return redirect('test_list')
-
-    user, created = User.objects.get_or_create(username='testuser')
-    if created:
-        user.set_password('testpassword')
-        user.save()
-
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-
-        user = authenticate(request, username=username, password=password)
-        if user:
-            login(request, user)
-            messages.success(request, f"¡Bienvenido, {user.username}!")
-            return redirect('test_list')
-        else:
-            messages.error(request, "Nombre de usuario o contraseña incorrectos.")
 
     return render(request, 'tests/login.html')

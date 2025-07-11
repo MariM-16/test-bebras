@@ -49,7 +49,7 @@ class Test(models.Model):
     max_attempts = models.IntegerField(default=1, help_text="Maximum number of attempts allowed for this test per student.")
 
     creator = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='created_tests')
-    assigned_groups = models.ManyToManyField(Group, through='TestAssignment', related_name='assigned_tests', blank=True) # <-- ¡¡ESTA ES LA LÍNEA CORRECTA CON 'through'!!
+    assigned_groups = models.ManyToManyField(Group, through='TestAssignment', related_name='assigned_tests', blank=True)
     
     def __str__(self):
         return self.name
