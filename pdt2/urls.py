@@ -21,6 +21,7 @@ from django.conf.urls.static import static
 from ckeditor_uploader import views as ckeditor_views
 
 urlpatterns = [
+    path('', RedirectView.as_view(url='/tests/', permanent=True)),
     path('tests/', include('test_bebras.urls')),
     path('ckeditor/', include('ckeditor_uploader.urls')),
     path('admin/', admin.site.urls),
