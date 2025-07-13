@@ -145,7 +145,6 @@ DATABASES['default'].update(dj_database_url.config(conn_max_age=500, ssl_require
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Allow all host headers
-ALLOWED_HOSTS = ['*']
 ALLOWED_HOSTS = ['bpdt2-c5de40943120.herokuapp.com']
 
 # Static files (CSS, JavaScript, Images)
