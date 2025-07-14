@@ -123,6 +123,7 @@ AUTH_PASSWORD_VALIDATORS = [
 env = environ.Env(
     GS_BUCKET_NAME=(str, ''),
     GS_CREDENTIALS_FILE=(str, ''),  
+    GS_CREDENTIALS=(str, ''),  
     EMAIL_HOST_USER=(str, ''),  
     EMAIL_HOST_PASSWORD=(str, ''),  
     SOCIAL_AUTH_GOOGLE_CLIENT_ID=(str, ''),  
@@ -191,14 +192,14 @@ STATICFILES_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
 
 GS_BUCKET_NAME = env('GS_BUCKET_NAME')
 
-GS_CREDENTIALS_FILE_NAME = env('GS_CREDENTIALS_FILE')
-GS_CREDENTIALS_PATH = os.path.join(BASE_DIR, 'test_bebras', 'static', GS_CREDENTIALS_FILE_NAME)
+# GS_CREDENTIALS_FILE_NAME = env('GS_CREDENTIALS_FILE')
+# GS_CREDENTIALS_PATH = os.path.join(BASE_DIR, 'test_bebras', 'static', GS_CREDENTIALS_FILE_NAME)
 
-GS_CREDENTIALS = None
-if GS_CREDENTIALS_FILE_NAME and os.path.exists(GS_CREDENTIALS_PATH):
-    GS_CREDENTIALS = service_account.Credentials.from_service_account_file(GS_CREDENTIALS_PATH)
-else:
-    print(f"ADVERTENCIA: Archivo de credenciales de Google Cloud Storage no encontrado o nombre no especificado: {GS_CREDENTIALS_PATH}")
+GS_CREDENTIALS = env('GS_CREDENTIALS')
+# if GS_CREDENTIALS_FILE_NAME and os.path.exists(GS_CREDENTIALS_PATH):
+#     GS_CREDENTIALS = service_account.Credentials.from_service_account_file(GS_CREDENTIALS_PATH)
+# else:
+#     print(f"ADVERTENCIA: Archivo de credenciales de Google Cloud Storage no encontrado o nombre no especificado: {GS_CREDENTIALS_PATH}")
 
 MEDIA_URL = f'https://storage.googleapis.com/{GS_BUCKET_NAME}/'
 
