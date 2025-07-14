@@ -1,0 +1,801 @@
+[
+    {
+        "model": "test_bebras.skill",
+        "pk": 1,
+        "fields": {
+            "name": "Descomposición"
+        }
+    },
+    {
+        "model": "test_bebras.skill",
+        "pk": 2,
+        "fields": {
+            "name": "Generalización"
+        }
+    },
+    {
+        "model": "test_bebras.skill",
+        "pk": 3,
+        "fields": {
+            "name": "Abstracción"
+        }
+    },
+    {
+        "model": "test_bebras.skill",
+        "pk": 4,
+        "fields": {
+            "name": "Pensamiento Algorítmico"
+        }
+    },
+    {
+      "model": "test_bebras.question",
+      "pk": 1,
+      "fields": {
+        "statement": "Las ventanas de la casa castor están marcadas por números de fila y columna, por ejemplo, las ventanas a la derecha de la puerta: [1, 3] y [2, 3].<br>El año pasado, Castor reemplazó las ventanas: [1, 2]; [1, 6]; [2, 2]; [2, 5].<br>Este año quiere reemplazar otras ventanas, considerando solo aquellas que tienen 4 \"vecinos\": una ventana a la izquierda, derecha, arriba y abajo.<br>¿Cuántas ventanas va a reemplazar este año?",
+        "difficulty": 1,
+        "skills": [1],
+        "response_format": "number",
+        "correct_answer": "1"
+      }
+    },
+    {
+        "model": "test_bebras.question",
+        "pk": 2,
+        "fields": {
+          "statement": "La niña castor tiene una larga tira de cartas. Quiere dividirla en tiras más pequeñas como la que tiene en la mano.<br>¿Cuál es el número máximo de tiras pequeñas que puede hacer?",
+          "difficulty": 1,
+          "skills": [2],
+          "response_format": "number",
+          "correct_answer": "4"
+        }
+    },
+    {
+        "model": "test_bebras.question",
+        "pk": 3,
+        "fields": {
+          "statement": "Juana está preparando su mochila para ir a un partido de fútbol. Necesita llevar una camiseta de mangas de color claro, cuello negro y sin rayas.<br>¿Qué camiseta debería llevar Juana?",
+          "difficulty": 1,
+          "skills": [3],
+          "response_format": "choice",
+          "correct_answer": "B"
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 3,
+          "text": "(A)",
+          "is_correct": false
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 3,
+          "text": "(B)",
+          "is_correct": true
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 3,
+          "text": "(C)",
+          "is_correct": false
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 3,
+          "text": "(D)",
+          "is_correct": false
+        }
+      },
+      {
+        "model": "test_bebras.question",
+        "pk": 4,
+        "fields": {
+          "statement": "El pequeño castor tiene seis sellos.<br>Usando los sellos creó la siguiente pintura:<br>¿En qué orden usó los sellos el castor?",
+          "difficulty": 1,
+          "skills": [4],
+          "response_format": "text",
+          "correct_answer": "6, 2, 5, 4, 3, 1"
+        }
+      },
+      {
+        "model": "test_bebras.question",
+        "pk": 5,
+        "fields": {
+          "statement": "Bruno creó una secuencia de dieciséis elementos usando dos figuras distintas:<br>Esta secuencia tiene tramos con figuras que se repiten. Bruno quiere formar tramos más largos de figuras iguales, pero solamente puede sustituir dos elementos de la secuencia.<br>¿Cuál es la longitud máxima de un tramo con figuras iguales que puede formar Bruno?",
+          "difficulty": 1,
+          "skills": [5],
+          "response_format": "number",
+          "correct_answer": "9"
+        }
+      },{
+        "model": "test_bebras.question",
+        "pk": 6,
+        "fields": {
+          "statement": "A Mia le gustan las vacaciones de senderismo y se aloja en un lugar diferente cada noche.<br>El diagrama muestra el paseo completo que Mia está considerando para sus próximas vacaciones.<br>Mia solo puede recorrer uno o dos tramos (marcados con líneas discontinuas) al día. El diagrama muestra el inicio, el final y todos los lugares en los que puede detenerse para pasar la noche.<br>En el diagrama se muestran dos rutas posibles:<ul><li>La ruta 1 tendrá 3 paradas nocturnas.</li><li>La ruta 2 tendrá 4 paradas nocturnas.</li></ul>¿Cuántas rutas diferentes (incluidas las dos mostradas) podría tomar Mia en sus vacaciones a pie?",
+          "difficulty": 4,
+          "skills": [1],
+          "response_format": "number",
+          "correct_answer": "6"
+        }
+      },{
+        "model": "test_bebras.question",
+        "pk": 7,
+        "fields": {
+          "statement": "La imagen de la derecha muestra un mapa de la ciudad de Bebrávia.<br><ul><li>Esquinas de las calles, donde podrían construirse nuevos bares de jugos.</li><li>Calles</li><li>Bares de jugos.</li></ul>Los residentes de Bebrávia decidieron que querían que fuera posible llegar a un bar de jugos desde cualquier esquina de la calle caminando como máximo 2 calles. Se decidió que se debería construir un nuevo bar de jugos en una de las cuatro esquinas numeradas.<br>¿En qué esquina se debería construir el bar de jugos?<br>Recuerde que deberá ser posible llegar a un carrito de jugos desde cualquier esquina de la ciudad caminando dos calles como máximo.",
+          "difficulty": 4,
+          "skills": [2],
+          "response_format": "text",
+          "correct_answer": "Esquina 4"
+        }
+      }, {
+        "model": "test_bebras.question",
+        "pk": 8,
+        "fields": {
+          "statement": "Castor acaba de tomar una foto.<br>¿Cuál de las siguientes es la foto tomada por Castor?",
+          "difficulty": 4,
+          "skills": [3],
+          "response_format": "choice",
+          "correct_answer": "D"
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 8,
+          "text": "(A)",
+          "is_correct": false
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 8,
+          "text": "(B)",
+          "is_correct": false
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 8,
+          "text": "(C)",
+          "is_correct": false
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 8,
+          "text": "(D)",
+          "is_correct": true
+        }
+      }, {
+        "model": "test_bebras.question",
+        "pk": 9,
+        "fields": {
+          "statement": "Un castor controla una cuadrícula de lámparas usando un teclado especial. Con un solo comando, puede cambiar el estado de todas las lámparas en la columna o fila respectiva. Si una lámpara está encendida, se apaga; si una lámpara está apagada, se enciende.<br>El castor escribió 4 programas:<ul><li>w) 1C, 5C, 2F, 3F, 4F</li><li>x) 1F, 5F, 2C, 3F, 4F</li><li>y) 1F, 5F, 3F, 4F, 5F, 1C, 5C</li><li>z) 1C, 2C, 3C, 4C, 5C, 1C, 5C, 1F, 5F</li></ul>\"C\" representa una columna y \"F\" una fila. Por ejemplo, el comando 1C enciende todas las lámparas de la primera columna. Si se repite el mismo comando 1C, todas las lámparas de la primera columna se apagarán.<br>Considerando que las lámparas comienzan todas apagadas, dos de los programas anteriores dan como resultado la cuadrícula mostrada en la imagen. Los otros dos generan un resultado diferente.<br>¿Cuáles son los programas que generan la imagen mostrada?",
+          "image": "question_images/Captura desde 2025-07-12 23-09-47.png",
+          "difficulty": 4,
+          "skills": [4],
+          "response_format": "text",
+          "correct_answer": "w, z"
+        }
+      },
+      {
+        "model": "test_bebras.question",
+        "pk": 10,
+        "fields": {
+          "statement": "Los castores están jugando a un juego de lógica para beber jugo de naranja. Castor puede beber de una botella donde:<br>A. hay una botella con menos jugo inmediatamente a la izquierda de esta botella<br>B. hay una botella con más jugo inmediatamente a la derecha de esta botella<br>¿De cuántas botellas puede beber Castor?",
+          "difficulty": 4,
+          "skills": [5],
+          "response_format": "number",
+          "correct_answer": "2"
+        }
+      },
+      {
+        "model": "test_bebras.question",
+        "pk": 11,
+        "fields": {
+          "statement": "Dos amigos, Anna y Bob, están buscando un tesoro. Cada uno tiene una aplicación para teléfono inteligente que les muestra la dirección hacia el tesoro que están buscando.<br>Las dos casillas (marcadas con una X) en el mapa muestran dónde está el tesoro.<br>Anna está buscando la caja 1 (X1) y Bob está buscando la caja 2 (X2).<br>Anna y Bob están parados en el mismo lugar. La imagen del mapa muestra además una captura de pantalla de los teléfonos de Anna y Bob.<br>¿Dónde están parados Anna y Bob?",
+          "difficulty": 4,
+          "skills": [1],
+          "response_format": "choice",
+          "correct_answer": "C"
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 11,
+          "text": "(A)",
+          "is_correct": false
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 11,
+          "text": "(B)",
+          "is_correct": false
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 11,
+          "text": "(C)",
+          "is_correct": true
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 11,
+          "text": "(D)",
+          "is_correct": false
+        }
+      }, {
+        "model": "test_bebras.question",
+        "pk": 12,
+        "fields": {
+          "statement": "En Bebravia los pagos se realizan con monedas especiales. Cada moneda tiene su propio valor escrito en el centro.<br>¿Cuál es el valor que falta en la última moneda?",
+          "difficulty": 4,
+          "skills": [2],
+          "response_format": "number",
+          "correct_answer": "29"
+        }
+      },{
+        "model": "test_bebras.question",
+        "pk": 13,
+        "fields": {
+          "statement": "Edwin tiene un nuevo juego: el juego, tiene fichas que muestran áreas en agua y tierra. Edwin puede formar paisajes usando las fichas teniendo en cuenta que fichas vecinas deben coincidir. Es decir, donde las fichas se tocan, la tierra debe tocar tierra y el agua debe tocar agua. Por ejemplo, dos fichas pueden estar alineadas como en la izquierda, pero no como en la derecha:<br>Edwin colocó dos fichas como se muestra a continuación y dejó espacios para dos fichas más.<br>Considerando las siguientes 6 fichas, y que estas se pueden rotar ¿cuántos paisajes diferentes puede formar Edwin?",
+          "difficulty": 4,
+          "skills": [3],
+          "response_format": "number",
+          "correct_answer": "8"
+        }
+      },
+      {
+        "model": "test_bebras.question",
+        "pk": 14,
+        "fields": {
+          "statement": "El pequeño Castor creó un robot que nada de acuerdo con las siguientes reglas:<br>1. Nada hacia adelante.<br>2. Cuando es posible dobla a la izquierda.<br>¿En qué estanque terminará su viaje?",
+          "difficulty": 4,
+          "skills": [4],
+          "response_format": "text",
+          "correct_answer": "A"
+        }
+      },{
+        "model": "test_bebras.question",
+        "pk": 15,
+        "fields": {
+          "statement": "Hace mucho tiempo en Japón, algunos ninjas sirvieron al gobierno del Shogunato. En caso de emergencia, utilizaban señales de humo para comunicarse entre sí.<br>En la figura, el punto rojo es la ubicación del gobierno del Shogunato. Cada punto celeste es un lugar donde se debe encender una señal de humo. Además, dos puntos están unidos por una línea si sus señales de humo se pueden ver entre sí. En cada punto, hay algunos Ninjas que permanecen de pie todo el día. Lanzan un humo cuando ven una señal desde un punto unido al suyo apenas 1 minuto después de que se disparara esta señal.<br>¿Cuántos minutos después de encender la señal en el punto rojo habrá una señal encendida en todos los puntos?",
+          "difficulty": 4,
+          "skills": [5],
+          "response_format": "choice",
+          "correct_answer": "A) 4 minutos"
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 15,
+          "text": "A) 4 minutos",
+          "is_correct": true
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 15,
+          "text": "B) 5 minutos",
+          "is_correct": false
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 15,
+          "text": "C) 6 minutos",
+          "is_correct": false
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 15,
+          "text": "D) 8 minutos",
+          "is_correct": false
+        }
+      },{
+        "model": "test_bebras.question",
+        "pk": 16,
+        "fields": {
+          "statement": "La comunidad de castores diseña una nueva presa en el río. Quieren utilizar la menor cantidad de troncos posible. Son inteligentes, por lo que quieren aprovechar las pequeñas islas del río. La imagen muestra el río, las islas y la cantidad de troncos necesarios para construir cada segmento de la presa.<br>¿Cuál es el número mínimo de troncos necesarios para la nueva presa?",
+          "difficulty": 4,
+          "skills": [4, 5],
+          "response_format": "choice",
+          "correct_answer": "A) 14 Troncos"
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 16,
+          "text": "A) 14 Troncos",
+          "is_correct": true
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 16,
+          "text": "B) 15 Troncos",
+          "is_correct": false
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 16,
+          "text": "C) 16 Troncos",
+          "is_correct": false
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 16,
+          "text": "D) 17 Troncos",
+          "is_correct": false
+        }
+      }, {
+        "model": "test_bebras.question",
+        "pk": 17,
+        "fields": {
+          "statement": "Un local de hamburguesas usa seis tipos de rellenos (A, B, C, D, E y F) para hacer una hamburguesa.<br>La siguiente tabla muestra las opciones de hamburguesas y sus rellenos. Los rellenos no se enumeran en ningún orden en particular.<br>¿Qué hamburguesa tiene los rellenos A-E-F?",
+          "difficulty": 4,
+          "skills": [1, 2],
+          "response_format": "choice",
+          "correct_answer": "A"
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 17,
+          "text": "A)",
+          "is_correct": true
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 17,
+          "text": "B)",
+          "is_correct": false
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 17,
+          "text": "C)",
+          "is_correct": false
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 17,
+          "text": "D)",
+          "is_correct": false
+        }
+      },{
+        "model": "test_bebras.question",
+        "pk": 18,
+        "fields": {
+          "statement": "El mago puede transformar objetos en una variedad de otros objetos. El orden de estos objetos siempre será el mismo.<br>Por ejemplo: si una moneda se transforma en una poción y un dragón, la poción siempre estará a la izquierda del dragón.<br>La tabla muestra las dos formas posibles en que un mago puede transformar un diamante y una moneda.<br>Estas transformaciones mágicas pueden ocurrir tantas veces como se desee y en cualquier orden. Es decir, cualquier diamante y cualquier moneda pueden transformarse en cualquier momento. De esta manera, se puede crear una larga lista de cosas mágicas a partir de un solo diamante o moneda.<br>Comenzando con un solo diamante, ¿qué línea NO es posible obtener?",
+          "difficulty": 7,
+          "skills": [1],
+          "response_format": "choice",
+          "correct_answer": "B"
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 18,
+          "text": "A)",
+          "is_correct": false
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 18,
+          "text": "B)",
+          "is_correct": true
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 18,
+          "text": "C)",
+          "is_correct": false
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 18,
+          "text": "D)",
+          "is_correct": false
+        }
+      },{
+        "model": "test_bebras.question",
+        "pk": 19,
+        "fields": {
+          "statement": "A Stella, la castor, le encanta dibujar estrellas. Ha ideado un sistema para etiquetar sus estrellas según su forma. Utiliza dos números:<ul><li>Un número de puntos para la estrella.</li><li>Un número que indica si se dibuja una línea desde un punto hasta el punto más cercano (el número es 1), el segundo punto más cercano (el número es 2), etc.</li></ul>A la derecha se muestran cuatro ejemplos del sistema de etiquetado de Stella.<br>¿Cómo etiquetaría Stella la siguiente estrella?",
+          "difficulty": 7,
+          "skills": [2],
+          "response_format": "choice",
+          "correct_answer": "B) 9:4"
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 19,
+          "text": "A) 9:3",
+          "is_correct": false
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 19,
+          "text": "B) 9:4",
+          "is_correct": true
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 19,
+          "text": "C) 10:4",
+          "is_correct": false
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 19,
+          "text": "D) 10:5",
+          "is_correct": false
+        }
+      },    {
+        "model": "test_bebras.question",
+        "pk": 20,
+        "fields": {
+          "statement": "El pequeño Castor y su amigo pensaron en transformar las operaciones matemáticas: suma (+), resta (-), multiplicación (*), división (/), en una representación gráfica, que luego codificarían de la siguiente manera: (A, B y C son variables o constantes):<br>• A+B se representa por:<br>donde la regla de codificación es: AB +<br>• (A+1)*(B+C) se representa por:<br>donde la regla de codificación es: A 1 + BC + *<br>¿Cuál es la representación correcta para la siguiente codificación? A 1 + B 2 * + 25 C / +",
+          "difficulty": 7,
+          "skills": [3],
+          "response_format": "choice",
+          "correct_answer": "B"
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 20,
+          "text": "A)",
+          "is_correct": false
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 20,
+          "text": "B)",
+          "is_correct": true
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 20,
+          "text": "C)",
+          "is_correct": false
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 20,
+          "text": "D)",
+          "is_correct": false
+        }
+      },{
+        "model": "test_bebras.question",
+        "pk": 21,
+        "fields": {
+          "statement": "Una rueda está programada para detenerse de acuerdo con las siguientes reglas según el orden de los lanzamientos:<br>1ª vez - salta un casillero<br>2ª vez - salta dos casilleros<br>3ª vez - salta tres casilleros, etc.<br>La primera letra de la palabra es \"P\".<br>¿Cuál es la palabra?",
+          "difficulty": 7,
+          "skills": [4],
+          "response_format": "text",
+          "correct_answer": "PROGRAMAR"
+        }
+      },
+      {
+        "model": "test_bebras.question",
+        "pk": 22,
+        "fields": {
+          "statement": "Los autos robot solo pueden moverse dentro del área cercada de acuerdo a las siguientes reglas:<ul><li>Un cuadrado hacia adelante.</li><li>Un cuadrado hacia atrás.</li><li>Girar a la izquierda (90°) en el casillero actual.</li><li>Girar a la derecha (90°) en el casillero actual.</li></ul>¿Cuál es el número mínimo de movimientos necesarios en total de todos los autos para llevar el auto rosado al casillero rosado?",
+          "difficulty": 7,
+          "skills": [5],
+          "response_format": "number",
+          "correct_answer": "11"
+        }
+      },
+      {
+        "model": "test_bebras.question",
+        "pk": 23,
+        "fields": {
+          "statement": "Manuel va al cumpleaños de María. No puede ver los colores con claridad, por lo que para él el amarillo (C) se ve igual que el rosado (A) y el marrón (D) se ve igual que el rojo (B). María decoró la habitación con diferentes filas de globos de colores.<br>¿Qué dos filas de globos le parecen iguales a Manuel?",
+          "difficulty": 7,
+          "skills": [2, 3],
+          "response_format": "text",
+          "correct_answer": "X, Z"
+        }
+      },{
+        "model": "test_bebras.question",
+        "pk": 24,
+        "fields": {
+          "statement": "En un castillo hay ocho habitaciones y seis tipos de puertas. Al cruzar una puerta, entras en una habitación que tiene una puerta del mismo tipo que la que utilizaste para entrar.<br>Por ejemplo, la habitación A tiene una puerta celeste, por lo que puedes desplazarte tanto a la habitación D como a la E, que también tienen una puerta celeste.<br>Yendo de la habitación A a la habitación C, ¿cuántas puertas abrirías, pasando por el menor número de habitaciones?",
+          "difficulty": 7,
+          "skills": [4, 5],
+          "response_format": "number",
+          "correct_answer": "3"
+        }
+      },{
+        "model": "test_bebras.question",
+        "pk": 25,
+        "fields": {
+          "statement": "Cinco pequeños castores agarran juguetes de un estante, teniendo en cuenta las siguientes pistas:<ul><li>El mono verde está a la izquierda del juguete del castor A.</li><li>El juguete del castor B está debajo del juguete del castor A y a la izquierda del juguete del castor C.</li><li>El juguete del castor C está arriba del juguete del castor D.</li><li>El juguete del castor D está a la derecha del juguete del castor E.</li><li>El juguete del castor E es el gato marrón.</li></ul>¿Cuál de las siguientes opciones corresponde al estante de donde sacaron los juguetes?",
+          "difficulty": 7,
+          "skills": [1, 5],
+          "response_format": "choice",
+          "correct_answer": "B"
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 25,
+          "text": "(A)",
+          "is_correct": false
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 25,
+          "text": "(B)",
+          "is_correct": true
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 25,
+          "text": "(C)",
+          "is_correct": false
+        }
+      },{
+        "model": "test_bebras.question",
+        "pk": 26,
+        "fields": {
+          "statement": "Los castores han decidido que cada ciudad debe tener al menos una tienda de comestibles cerca. Se dice que una tienda está \"cerca\" de una ciudad si se puede llegar a ella sin pasar por otra ciudad.\nEn el diagrama:\n* Los círculos verdes representan ciudades.\n* Los cuadrados representan dónde se podrían abrir las tiendas de comestibles.\n* Las líneas que los conectan representan caminos.\n¿Cuál es el número mínimo de tiendas que se deberían abrir para cumplir la condición de cercanía definida por los castores?",
+          "difficulty": 7,
+          "skills": [
+            1
+          ],
+          "response_format": "number",
+          "correct_answer": "5"
+        }
+      },{
+        "model": "test_bebras.question",
+        "pk": 27,
+        "fields": {
+          "statement": "Un pequeño castor quiere regalarle un collar a su novia. Él sabe que ella quiere uno específico:\n1. Las frutas rojas tienen que estar entre agujas de pino y\n2. El número de semillas marrones debe ser igual al número de agujas de pino.\n¿Cuál collar le gustará a la castora?",
+          "difficulty": 7,
+          "skills": [
+            2
+          ],
+          "response_format": "choice",
+          "correct_answer": "A"
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 27,
+          "text": "A",
+          "is_correct": true
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 27,
+          "text": "B",
+          "is_correct": false
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 27,
+          "text": "C",
+          "is_correct": false
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 27,
+          "text": "D",
+          "is_correct": false
+        }
+      },
+      {
+        "model": "test_bebras.question",
+        "pk": 28,
+        "fields": {
+          "statement": "El rey Brebras gobierna sobre siete regiones cuyas fronteras se muestran en el mapa. El rey ha escondido un tesoro en una de las 7 regiones.\nPara recordar dónde está el tesoro el rey ha realizado un mapa especial, en donde representó cada región como un círculo, marcando la región que tiene el tesoro. En esta representación, dos círculos están conectados si las regiones comparten una frontera (son vecinas).\n¿Cuál de estos representa el mapa especial realizado por el rey Brebras?",
+          "difficulty": 7,
+          "skills": [
+            1,
+            2
+          ],
+          "response_format": "choice",
+          "correct_answer": "D"
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 28,
+          "text": "A",
+          "is_correct": false
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 28,
+          "text": "B",
+          "is_correct": false
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 28,
+          "text": "C",
+          "is_correct": false
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 28,
+          "text": "D",
+          "is_correct": true
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 28,
+          "text": "E",
+          "is_correct": false
+        }
+      },{
+        "model": "test_bebras.question",
+        "pk": 29,
+        "fields": {
+          "statement": "Castor ha desarrollado un conjunto de comandos para doblar papel. Estos se pueden utilizar para explicar cómo doblar cualquier trozo de papel con lados rectos.\nUno de los comandos es `fold`. `e = fold(a, b)` significa: Dobla la hoja de papel de manera que el lado a quede completamente sobre el lado b.\nDe esta manera se crea un nuevo lado, el pliegue. Esta línea se llama e. Ejemplo:\nTenga en cuenta que el papel permanece sobre la mesa durante el plegado y que la longitud del lado b es el doble de la longitud del lado a.\n¿Cómo se ve el rectángulo de papel (a, b, c, d) después de la ejecución de estos tres comandos?\n`e = fold(c, a); f = fold(c, d); g = fold(a, f)`",
+          "difficulty": 7,
+          "skills": [
+            5
+          ],
+          "response_format": "choice",
+          "correct_answer": "A"
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 29,
+          "text": "A",
+          "is_correct": true
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 29,
+          "text": "B",
+          "is_correct": false
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 29,
+          "text": "C",
+          "is_correct": false
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 29,
+          "text": "D",
+          "is_correct": false
+        }
+      },{
+        "model": "test_bebras.question",
+        "pk": 30,
+        "fields": {
+          "statement": "A Castor le encanta cocinar. Su plato favorito es el Chakhokhbili.\nCuando cocina en el jardín, utiliza un solo quemador de gas y realiza las siguientes acciones una tras otra:\n1. Cocinar una cebolla: 10 minutos\n2. Cocinar un pimiento: 10 minutos\n3. Combine la cebolla cocida y el pimiento cocido, agregue un tomate y cocine todo junto: 20 minutos\n4. Cocinar un pollo: 30 minutos\n5. Combine todo lo de los pasos 3 y 4, agregue algunas especias y cocínelo todo: 20 minutos\nEn total, Castor necesita 90 minutos para preparar su Chakhokhbili en un solo quemador de gas.\nCuando Castor cocina en casa tiene muchos quemadores de gas disponibles. Puede utilizar más quemadores para que su comida esté lista antes.\n¿Cuál de las siguientes afirmaciones NO es correcta?",
+          "difficulty": 7,
+          "skills": [
+            5
+          ],
+          "response_format": "choice",
+          "correct_answer": "D"
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 30,
+          "text": "A) Castor puede reducir el tiempo de cocción en 10 minutos al usar 2 quemadores",
+          "is_correct": false
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 30,
+          "text": "B) Sergo puede reducir el tiempo de cocción en 30 minutos al usar 2 quemadores",
+          "is_correct": false
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 30,
+          "text": "C) Sergo puede reducir el tiempo de cocción en 40 minutos al usar 3 quemadores",
+          "is_correct": false
+        }
+      },
+      {
+        "model": "test_bebras.choice",
+        "fields": {
+          "question": 30,
+          "text": "D) Sergo puede reducir el tiempo de cocción en 50 minutos al usar 4 quemadores",
+          "is_correct": true
+        }
+      }
+  ]
