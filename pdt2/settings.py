@@ -178,7 +178,6 @@ CKEDITOR_CONFIGS = {
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
-LOGIN_URL = '/login/'
 
 # Activate Django-Heroku.
 django_heroku.settings(locals())
@@ -228,13 +227,14 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
 # Configuración de ALLAUTH
-SITE_ID = 1
+SITE_ID = 2
 
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 ACCOUNT_EMAIL_VERIFICATION = 'optional' 
 LOGIN_REDIRECT_URL = '/tests/'
+LOGIN_URL = 'tests/login/'
 SOCIALACCOUNT_LOGIN_REDIRECT_URL = '/tests/'
 ACCOUNT_ALLOW_REGISTRATION = False
 SOCIALACCOUNT_AUTO_SIGNUP = False
