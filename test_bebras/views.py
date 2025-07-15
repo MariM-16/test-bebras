@@ -59,19 +59,17 @@ def test_list(request):
     }
     return render(request, 'tests/test_list.html', context)
 
-
-
-
 @login_required
 def test_detail(request, test_id):
+    user = request.user
     test = get_object_or_404(Test, id=test_id)
 
-    if is_teacher_or_staff(request.user):
-        if not request.user.is_staff and test.creator != request.user:
+    if is_teacher_or_staff(user):
+        if not user.is_staff and test.creator != user:
             messages.error(request, "No tienes permiso para ver este test.")
             return redirect('test_list')
-    elif is_student(request.user):
-        user_groups_ids = request.user.groups.values_list('id', flat=True)
+    elif is_student(user):
+        user_groups_ids = user.groups.values_list('id', flat=True)
         if not Test.objects.filter(id=test_id, assigned_groups__id__in=user_groups_ids).exists():
             messages.error(request, "Este test no está asignado a ninguno de tus grupos.")
             return redirect('test_list')
@@ -79,7 +77,37 @@ def test_detail(request, test_id):
         messages.error(request, "No tienes permiso para acceder a los tests.")
         return redirect('simple_login')
 
-    service = TestAttemptService(request.user, test, request.session, request.POST if request.method == 'POST' else None)
+    finalized_attempts_count = Attempt.objects.filter(
+        user=user,
+        test=test,
+        end_time__isnull=False 
+    ).count()
+
+    if finalized_attempts_count >= test.max_attempts: 
+        messages.warning(request, f"Ya has agotado tus {test.max_attempts} intentos para este test.")
+
+        last_finalized_attempt = Attempt.objects.filter(
+            user=user,
+            test=test,
+            end_time__isnull=False
+        ).order_by('-date_taken').first() 
+
+        if last_finalized_attempt:
+            messages.info(request, "Serás redirigido a la revisión de tu último intento.")
+            return redirect(reverse('test_bebras:test_review', args=[test.id, last_finalized_attempt.id]))
+        else:
+            return redirect('test_list')
+
+    current_attempt = Attempt.objects.filter(user=user, test=test, end_time__isnull=True).first()
+
+    if not current_attempt:
+        current_attempt = Attempt.objects.create(user=user, test=test, score=0, correct_count=0)
+        messages.info(request, f"Iniciando un nuevo intento para el test: {test.name}. Este es tu intento {finalized_attempts_count + 1} de {test.max_attempts}.")
+        request.session[f'current_question_index_{current_attempt.id}'] = 0
+    else:
+        messages.info(request, f"Continuando con tu intento para el test: {test.name}.")
+
+    service = TestAttemptService(user, test, request.session, request.POST if request.method == 'POST' else None, attempt=current_attempt)
 
     if request.method == 'POST':
         process_results = service.process_post_request()
