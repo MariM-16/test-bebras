@@ -62,7 +62,7 @@ class TestAttemptService:
 
         if self.attempt.end_time is not None:
             messages.error(self.user, "No puedes realizar acciones en un test ya finalizado.")
-            return {'status': 'redirect', 'view_name': 'test_bebras:test_review', 'kwargs': {'test_id': self.test.id, 'attempt_id': self.attempt.id}}
+            return {'status': 'redirect', 'view_name': 'test_review', 'kwargs': {'test_id': self.test.id, 'attempt_id': self.attempt.id}}
 
         if self.request_post_data.get('force_finish') == 'true':
             return self._handle_force_finish()
@@ -94,11 +94,11 @@ class TestAttemptService:
 
             self.attempt.end_time = now()
             self.attempt.save()
-        return {'status': 'redirect', 'view_name': 'test_bebras:test_review', 'kwargs': {'test_id': self.test.id, 'attempt_id': self.attempt.id}}
+        return {'status': 'redirect', 'view_name': 'test_review', 'kwargs': {'test_id': self.test.id, 'attempt_id': self.attempt.id}}
 
     def _handle_next_question(self):
         if self.attempt.end_time is not None:
-            return {'status': 'redirect', 'view_name': 'test_bebras:test_review', 'kwargs': {'test_id': self.test.id, 'attempt_id': self.attempt.id}}
+            return {'status': 'redirect', 'view_name': 'test_review', 'kwargs': {'test_id': self.test.id, 'attempt_id': self.attempt.id}}
 
         if self.current_question_index >= self.total_questions:
             if self.attempt.end_time is None:
@@ -106,7 +106,7 @@ class TestAttemptService:
                 self.attempt.save()
                 if f'current_question_index_{self.attempt.id}' in self.session:
                     del self.session[f'current_question_index_{self.attempt.id}']
-            return {'status': 'redirect', 'view_name': 'test_bebras:test_review', 'kwargs': {'test_id': self.test.id, 'attempt_id': self.attempt.id}}
+            return {'status': 'redirect', 'view_name': 'test_review', 'kwargs': {'test_id': self.test.id, 'attempt_id': self.attempt.id}}
 
         current_question = self.questions[self.current_question_index]
         Answer.objects.filter(attempt=self.attempt, question=current_question).delete()
@@ -166,12 +166,12 @@ class TestAttemptService:
                 self.attempt.save()
                 if f'current_question_index_{self.attempt.id}' in self.session:
                     del self.session[f'current_question_index_{self.attempt.id}']
-            return {'status': 'redirect', 'view_name': 'test_bebras:test_review', 'kwargs': {'test_id': self.test.id, 'attempt_id': self.attempt.id}}
+            return {'status': 'redirect', 'view_name': 'test_review', 'kwargs': {'test_id': self.test.id, 'attempt_id': self.attempt.id}}
         else:
-            return {'status': 'redirect', 'view_name': 'test_bebras:test_detail', 'kwargs': {'test_id': self.test.id}}
+            return {'status': 'redirect', 'view_name': 'test_detail', 'kwargs': {'test_id': self.test.id}}
 
     def _handle_previous_question(self):
         if self.current_question_index > 0:
             self.session[f'current_question_index_{self.attempt.id}'] -= 1
-            return {'status': 'redirect', 'view_name': 'test_bebras:test_detail', 'kwargs': {'test_id': self.test.id}}
+            return {'status': 'redirect', 'view_name': 'test_detail', 'kwargs': {'test_id': self.test.id}}
         return {'status': 'no_action'}

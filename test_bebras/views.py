@@ -94,7 +94,7 @@ def test_detail(request, test_id):
 
         if last_finalized_attempt:
             messages.info(request, "Serás redirigido a la revisión de tu último intento.")
-            return redirect(reverse('test_bebras:test_review', args=[test.id, last_finalized_attempt.id]))
+            return redirect('test_review', test_id=test.id, last_finalized_attempt.id)
         else:
             return redirect('test_list')
 
