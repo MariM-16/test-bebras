@@ -5,7 +5,6 @@
 
 {% block content %}
     <div class="container">
-        <h3 class="text-center">Resumen del Test</h3>
         <h4 class="text-center">{{ test.name }}</h4>
         
         <div class="test-review-layout">
@@ -60,6 +59,7 @@
 
                         {% if is_teacher_user %}
                             <p><strong>Puntuación de la pregunta:</strong> <span class="badge bg-secondary">{{ result.question_score|floatformat:2 }}</span></p>
+                            <p><strong>Dificultad:</strong> <span>{{ result.question.difficulty }}</span></p>
                         {% endif %}
 
                         {% if result.question.skills.exists %}
