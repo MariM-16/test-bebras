@@ -27,29 +27,28 @@ class TestReviewService:
         self.post_data = post_data
 
     def _calculate_answer_score_and_status(self, answer):
-        is_correct = False
+        is_correct_current = False
         question_score_value = Decimal(0)
         correct_answer_display = "No disponible"
         difficulty = answer.question.difficulty
-
         question_status = ""
 
         if answer.question.response_format == 'choice':
             correct_choice = answer.question.choices.filter(is_correct=True).first()
             if correct_choice:
                 correct_answer_display = correct_choice.text
-            is_correct = answer.answer_choice and answer.answer_choice.is_correct
-            answer.grade_status = 'correct' if is_correct else 'incorrect'
-            answer.manual_grade = None
-            answer.is_correct_manual = None
+            is_correct_auto = answer.answer_choice and answer.answer_choice.is_correct
+            
+            question_status = 'correct' if is_correct_auto else 'incorrect'
+            is_correct_current = is_correct_auto 
+
         elif answer.question.response_format == 'text' or answer.question.response_format == 'number':
+            auto_is_correct_text_num = False
             if answer.question.response_format == 'text':
                 if answer.question.correct_answer:
                     correct_answer_display = answer.question.correct_answer
-                if answer.answer_text is not None and answer.question.correct_answer:
-                    is_correct = answer.answer_text.strip().lower() == answer.question.correct_answer.strip().lower()
-                else:
-                    is_correct = False
+                if answer.answer_text is not None and answer.answer_text != "" and answer.question.correct_answer:
+                    auto_is_correct_text_num = answer.answer_text.strip().lower() == answer.question.correct_answer.strip().lower()
             elif answer.question.response_format == 'number':
                 if answer.question.correct_answer:
                     correct_answer_display = answer.question.correct_answer
@@ -57,31 +56,31 @@ class TestReviewService:
                     try:
                         user_num = Decimal(str(answer.answer_number))
                         correct_num = Decimal(str(correct_answer_display))
-                        is_correct = user_num == correct_num
+                        auto_is_correct_text_num = user_num == correct_num
                     except (ValueError, InvalidOperation):
-                        is_correct = False
-                else:
-                    is_correct = False
+                        auto_is_correct_text_num = False
 
             if answer.grade_status == 'graded':
-                is_correct = answer.is_correct_manual
-                question_score_value = answer.manual_grade if answer.manual_grade is not None else Decimal('0.0')
                 question_status = "graded"
+                is_correct_current = answer.is_correct_manual
             else:
-                user_attempted_to_answer = False
-                if answer.question.response_format == 'text' and answer.answer_text is not None and answer.answer_text != "":
-                    user_attempted_to_answer = True
-                elif answer.question.response_format == 'number' and answer.answer_number is not None:
-                    user_attempted_to_answer = True
-
+                user_attempted_to_answer = (answer.question.response_format == 'text' and answer.answer_text is not None and answer.answer_text != "") or \
+                                           (answer.question.response_format == 'number' and answer.answer_number is not None)
+                
                 if user_attempted_to_answer:
-                    question_status = "pending"
+                    if auto_is_correct_text_num:
+                        question_status = "correct"
+                        is_correct_current = True
+                    else:
+                        question_status = "pending"
+                        is_correct_current = False
                 else:
                     question_status = "incorrect"
+                    is_correct_current = False
 
-        if question_status == "correct" or (question_status == "graded" and is_correct):
+        if question_status == "correct":
             question_score_value = self.points_per_difficulty.get(str(difficulty), Decimal(0))
-        elif question_status == "incorrect" or (question_status == "graded" and not is_correct):
+        elif question_status == "incorrect":
             if self.penalty_type == 'fixed':
                 question_score_value = -self.fixed_penalty
             elif self.penalty_type == 'by_difficulty':
@@ -90,6 +89,8 @@ class TestReviewService:
                 question_score_value = Decimal(0)
         elif question_status == "pending":
             question_score_value = Decimal(0)
+        elif question_status == "graded":
+            question_score_value = answer.manual_grade if answer.manual_grade is not None else Decimal('0.0')
 
         user_answer_display = 'Sin respuesta'
         if answer.question.response_format == 'choice':
@@ -107,10 +108,10 @@ class TestReviewService:
             'question': answer.question,
             'user_answer': user_answer_display,
             'correct_answer': correct_answer_display,
-            'is_correct_auto': is_correct,
+            'is_correct_auto': is_correct_current,
             'question_score': question_score_value,
             'status': question_status,
-            'is_editable': question_status == '  pending',
+            'is_editable': question_status == 'pending',
             'current_is_correct_manual': answer.is_correct_manual if answer.is_correct_manual is not None else False,
             'current_manual_grade': answer.manual_grade if answer.manual_grade is not None else Decimal('0.0')
         }
@@ -127,12 +128,7 @@ class TestReviewService:
             if result['status'] == 'correct' or \
                (result['status'] == 'graded' and result['is_correct_auto']):
                 self.total_correct += 1
-            elif result['status'] == '  pending':
-                pass
-            elif result['status'] == 'incorrect' or \
-                 (result['status'] == 'graded' and not result['is_correct_auto']):
-                pass
-
+            
             self.total_raw_score += result['question_score']
 
         max_possible_test_score = Decimal(0)
@@ -144,6 +140,11 @@ class TestReviewService:
             self.final_percentage_score = max(Decimal(0), min(Decimal(100), self.final_percentage_score))
         else:
             self.final_percentage_score = Decimal(0)
+
+        with transaction.atomic():
+            self.attempt.score = self.final_percentage_score
+            self.attempt.correct_count = self.total_correct
+            self.attempt.save()
 
         return {
             'test': self.test,
@@ -159,7 +160,7 @@ class TestReviewService:
     def process_manual_corrections(self):
         updated_answers = []
         for answer in self.answers:
-            if answer.grade_status == '  pending' and \
+            if answer.grade_status == 'pending' and \
                answer.question.response_format in ['text', 'number']:
                 
                 checkbox_name = f'is_correct_manual_{answer.id}'
@@ -197,9 +198,4 @@ class TestReviewService:
 
         recalculated_results = self.calculate_review_results()
         
-        self.attempt.score = recalculated_results['total_score']
-        self.attempt.correct_count = recalculated_results['total_correct']
-        self.attempt.save()
-
         return True
-
