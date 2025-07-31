@@ -31,7 +31,8 @@ from .utils.user_roles import is_teacher_or_staff, is_student
 @login_required
 def test_list(request):
     user_tests = Test.objects.none() 
-    if is_teacher_or_staff(request.user):
+    is_current_user_teacher_or_staff = is_teacher_or_staff(request.user)
+    if is_current_user_teacher_or_staff:
         if request.user.is_staff:
             user_tests = Test.objects.all().order_by('name')
         else:
@@ -56,6 +57,7 @@ def test_list(request):
 
     context = {
         'tests': tests_with_attempt_info,
+        'is_teacher_user': is_current_user_teacher_or_staff,
     }
     return render(request, 'tests/test_list.html', context)
 
