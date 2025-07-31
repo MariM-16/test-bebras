@@ -19,7 +19,7 @@
         {% for item in tests %}
             <div class="tests-card">
                 <h4>{{ item.test.name }}</h4>
-                {% if not user.is_staff %}
+                {% if not is_teacher_user %}
                     Intentos realizados: {{ item.attempts_made }} / {{ item.test.max_attempts }}
                     <p>Intentos restantes: {{ item.attempts_remaining }}</p>
                 {% endif %}
