@@ -5,7 +5,7 @@
 {% block content %}
 <div class="container mt-4">
     <h1 class="text-center mb-4">{{ group.name }}</h1>
-    <p class="lead text-center">Aquí puedes gestionar los estudiantes y los tests asignados a este grupo.</p>
+    <p class="lead text-center">Aquí puedes gestionar los estudiantes y los test asignados a este grupo.</p>
 
     {% if messages %}
         {% for message in message %}
@@ -34,7 +34,7 @@
                     <p class="text-muted text-center">No hay estudiantes en este grupo con el rol 'Estudiantes'.</p>
                 {% endif %}
 
-                <h5 class="card-title text-center mb-3">Tests Asignados a {{ group.name }}</h5>
+                <h5 class="card-title text-center mb-3">Test Asignados a {{ group.name }}</h5>
                 {% if assigned_tests_for_group %}
                     <ul class="list-group">
                         {% for test in assigned_tests_for_group %}
@@ -84,7 +84,7 @@
                         </div>
                     </form>
                 {% else %}
-                    <p class="text-muted text-center">No hay tests disponibles para asignar a este grupo.</p>
+                    <p class="text-muted text-center">No hay test disponibles para asignar a este grupo.</p>
                 {% endif %}
             </div>
         </div>

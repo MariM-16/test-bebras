@@ -1,11 +1,11 @@
 {% extends 'base_generic.html' %}
 
-{% block title %}Lista de Tests{% endblock %}
+{% block title %}Lista de Test{% endblock %}
 
 {% block content %}
-    <h3>Lista de Tests</h3>
+    <h3>Lista de Test</h3>
 
-    {% if user.is_staff %} 
+    {% if is_teacher_user %} 
         <div class="create-test-button-wrapper">
             <form action="{% url 'auto_test_create' %}" method="get" class="create-test-form">
                 <button type="submit" class="btn btn-primary">
@@ -24,7 +24,7 @@
                     <p>Intentos restantes: {{ item.attempts_remaining }}</p>
                 {% endif %}
 
-                {% if user.is_staff %}
+                {% if is_teacher_user %}
                     <a href="{% url 'test_detail_teacher' item.test.id %}" class="btn-outline">Ver Detalles</a>
                 {% else %}
                     {% if item.can_start_test %}
@@ -35,7 +35,7 @@
                 {% endif %}
             </div>
         {% empty %}
-            <p>No hay tests disponibles en este momento.</p>
+            <p>No hay test disponibles en este momento.</p>
         {% endfor %}
     </div>
 {% endblock %}

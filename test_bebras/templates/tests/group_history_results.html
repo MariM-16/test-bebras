@@ -5,7 +5,7 @@
 {% block content %}
 <div class="container mt-5">
     <h2 class="mb-4">Resultados Históricos para el Grupo: {{ group.name }}</h2>
-    <p class="lead">Un resumen del rendimiento de los estudiantes en los tests asignados a este grupo.</p>
+    <p class="lead">Un resumen del rendimiento de los estudiantes en los test asignados a este grupo.</p>
 
     <div class="mb-4 d-flex justify-content-between align-items-center"> 
         <a href="{% url 'test_attempts' %}" class="btn btn-secondary">Volver a Resumen de Intentos</a>
@@ -44,7 +44,7 @@
         </div>
     {% else %}
         <div class="alert alert-info text-center" role="alert">
-            No hay datos de tests completados para este grupo.
+            No hay datos de test completados para este grupo.
         </div>
     {% endif %}
 
@@ -97,7 +97,7 @@
         </div>
     {% else %}
         <div class="alert alert-info text-center" role="alert">
-            No hay estudiantes en este grupo o no han realizado tests.
+            No hay estudiantes en este grupo o no han realizado test.
         </div>
     {% endif %}
 </div>

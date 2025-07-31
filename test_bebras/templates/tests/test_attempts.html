@@ -22,7 +22,7 @@
                 <div class="col-md-4">
                     <label for="test-filter" class="form-label">Filtrar por Test:</label>
                     <select class="form-select" id="test-filter" name="test">
-                        <option value="">Todos los Tests</option>
+                        <option value="">Todos los Test</option>
                         {% for test_item in tests_available %}
                             <option value="{{ test_item.id }}" {% if selected_test_id|stringformat:"s" == test_item.id|stringformat:"s" %}selected{% endif %}>
                                 {{ test_item.name }}
