@@ -6,9 +6,9 @@ from django.db import models
 from django.forms import Textarea
 from django.utils.timezone import now
 from decimal import Decimal, InvalidOperation
+from django.utils.html import strip_tags
 
 from .models import Answer, Attempt, Choice, Question, Skill, Test, TestAssignment
-
 
 class ChoiceInline(admin.TabularInline):
     model = Choice
@@ -20,6 +20,7 @@ class QuestionAdmin(admin.ModelAdmin):
     list_filter = ('difficulty', 'response_format')
     search_fields = ('statement',)
     filter_horizontal = ('skills',)
+
     formfield_overrides = {
         models.TextField: {'widget': Textarea(attrs={'rows': 4, 'cols': 80})},
     }
@@ -32,7 +33,8 @@ class QuestionAdmin(admin.ModelAdmin):
         return inlines
 
     def short_statement(self, obj):
-        return obj.statement[:60] + '...' if len(obj.statement) > 60 else obj.statement
+        clean_text = strip_tags(obj.statement)
+        return clean_text[:60] + '...' if len(clean_text) > 60 else clean_text
     short_statement.short_description = "Enunciado"
 
 @admin.register(Skill)
@@ -43,9 +45,14 @@ class SkillAdmin(admin.ModelAdmin):
 class ChoiceAdmin(admin.ModelAdmin):
     list_display = ('question', 'text', 'is_correct')
     list_filter = ('is_correct',)
+
     formfield_overrides = {
         models.TextField: {'widget': Textarea(attrs={'rows': 4, 'cols': 80})},
     }
+    
+    def clean_choice_text(self, obj):
+        return strip_tags(obj.text)
+    clean_choice_text.short_description = "Alternativa"
 
 @admin.register(Test)
 class TestAdmin(admin.ModelAdmin):
@@ -149,7 +156,7 @@ class AnswerAdmin(admin.ModelAdmin):
         return obj.grade_status == 'pending'
 
     def has_delete_permission(self, request, obj=None):
-        return False
+        return True
 
 
 @admin.register(Attempt)
@@ -164,7 +171,7 @@ class AttemptAdmin(admin.ModelAdmin):
     def has_change_permission(self, request, obj=None):
         return False
     def has_delete_permission(self, request, obj=None):
-        return False
+        return True
 
 @admin.register(TestAssignment)
 class TestAssignmentAdmin(admin.ModelAdmin):
