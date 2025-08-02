@@ -204,6 +204,8 @@ GS_BUCKET_NAME = env('GS_BUCKET_NAME')
 GS_CREDENTIALS_JSON =  env('GS_CREDENTIALS')
 service_account_info = json.loads(GS_CREDENTIALS_JSON)
 GS_CREDENTIALS = service_account.Credentials.from_service_account_info(service_account_info)
+GS_DEFAULT_ACL = 'publicRead'
+GS_QUERYSTRING_AUTH = False
 
 MEDIA_URL = f'https://storage.googleapis.com/{GS_BUCKET_NAME}/'
 
