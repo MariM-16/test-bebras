@@ -8,7 +8,7 @@ from django.utils.timezone import now
 from decimal import Decimal, InvalidOperation
 from django.utils.html import strip_tags
 
-from .models import Answer, Attempt, Choice, Question, Skill, Test, TestAssignment
+from .models import Answer, Attempt, Choice, Question, Skill, Test, TestAssignment, GroupMetadata
 
 class ChoiceInline(admin.TabularInline):
     model = Choice
@@ -179,3 +179,9 @@ class TestAssignmentAdmin(admin.ModelAdmin):
     list_filter = ('assigned_at', 'group', 'assigned_by')
     search_fields = ('test__name', 'group__name', 'assigned_by__username')
     readonly_fields = ('assigned_at',)
+
+@admin.register(GroupMetadata)
+class GroupMetadataAdmin(admin.ModelAdmin):
+    list_display = ('group', 'created_by')
+    search_fields = ('group__name', 'created_by__username')
+    list_filter = ('created_by',)

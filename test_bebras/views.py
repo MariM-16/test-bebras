@@ -277,12 +277,13 @@ def test_attempts(request):
 @login_required
 @user_passes_test(is_teacher_or_staff, login_url='/login/')
 def group_list_view(request):
-    if request.user.is_staff:
+    is_current_user_staff = request.user.is_staff
+    if is_current_user_staff:
         groups = Group.objects.exclude(name__in=['Estudiantes', 'Profesores']).order_by('name')
     else:
         groups = Group.objects.filter(
-            testassignment__assigned_by=request.user
-        ).distinct().exclude(name__in=['Estudiantes', 'Profesores']).order_by('name')
+            groupmetadata__created_by=request.user
+        ).exclude(name__in=['Estudiantes', 'Profesores']).order_by('name')
 
     groups_data = []
     student_role_group, _ = Group.objects.get_or_create(name='Estudiantes')
@@ -290,7 +291,10 @@ def group_list_view(request):
     for group in groups:
         students_in_group = User.objects.filter(groups=group).filter(groups=student_role_group).order_by('first_name', 'last_name')
 
-        assigned_tests_count = group.assigned_tests.count()
+        if is_current_user_staff:
+            assigned_tests_count = group.assigned_tests.count()
+        else:
+            assigned_tests_count = group.assigned_tests.filter(creator=request.user).count()
 
         groups_data.append({
             'group': group,
@@ -521,10 +525,15 @@ def upload_students_view(request):
 
                     if groups_str:
                         group_names = [g.strip() for g in groups_str.split(',') if g.strip()]
+                        protected_group_names = ['Estudiantes', 'Profesores']
                         for group_name in group_names:
                             if group_name:
+                                if group_name in protected_group_names:
+                                    messages.warning(request, f"No se pudo asignar grupo para el estudiante {student_email}.")
+                                    continue
                                 group, _ = Group.objects.get_or_create(name=group_name)
                                 user.groups.add(group)
+                                GroupMetadata.objects.get_or_create(group=group, defaults={'created_by': request.user})
 
                 except Exception as e:
                     errors.append(f"Fila {line_num} (email: {student_email}): Error al procesar - {e}")

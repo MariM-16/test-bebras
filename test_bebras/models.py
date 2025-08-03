@@ -38,15 +38,22 @@ class Choice(models.Model):
 class Test(models.Model):
     name = models.CharField(max_length=100)
     questions = models.ManyToManyField(Question, related_name='tests_assigned')
+    
+    # Configuraciones de comportamiento
     maximum_time = models.DurationField()
     allow_backtracking = models.BooleanField(default=True)
     allow_no_response = models.BooleanField(default=True)
+    max_attempts = models.IntegerField(default=1, help_text="Maximum number of attempts allowed for this test per student.")
 
+    # Configuraciones de puntuación y penalización
     points_per_difficulty = JSONField(default=dict)
-    penalty_type = models.CharField(max_length=20, choices=[('none', 'None'), ('fixed', 'Fixed'), ('by_difficulty', 'By Difficulty')], default='none')
+    penalty_type = models.CharField(
+        max_length=20, 
+        choices=[('none', 'None'), ('fixed', 'Fixed'), ('by_difficulty', 'By Difficulty')], 
+        default='none'
+    )
     fixed_penalty = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
     penalty_by_difficulty = JSONField(default=dict, blank=True, null=True)
-    max_attempts = models.IntegerField(default=1, help_text="Maximum number of attempts allowed for this test per student.")
 
     creator = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='created_tests')
     assigned_groups = models.ManyToManyField(Group, through='TestAssignment', related_name='assigned_tests', blank=True)
@@ -110,3 +117,10 @@ class TestAssignment(models.Model):
 
     def __str__(self):
         return f"{self.test.name} asignado a {self.group.name} el {self.assigned_at.strftime('%Y-%m-%d')}"
+
+class GroupMetadata(models.Model):
+    group = models.OneToOneField(Group, on_delete=models.CASCADE)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='created_groups')
+
+    def __str__(self):
+        return f"Metadata para el grupo: {self.group.name}"
