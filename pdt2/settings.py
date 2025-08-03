@@ -28,7 +28,7 @@ PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 SECRET_KEY = "django-insecure-my)+la&!pf3=@tit7tw$!@yffeb9vee#2#+dv3ec^mppw^)9&%"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 # Application definition
 
@@ -191,19 +191,11 @@ INSTALLED_APPS += ["storages"]
 DEFAULT_FILE_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
 STATICFILES_STORAGE = "storages.backends.gcloud.GoogleCloudStorage"
 
-GS_BUCKET_NAME = env('GS_BUCKET_NAME')
-
-# GS_CREDENTIALS_FILE_NAME = env('GS_CREDENTIALS_FILE')
-# GS_CREDENTIALS_PATH = os.path.join(BASE_DIR, 'test_bebras', 'static', GS_CREDENTIALS_FILE_NAME)
-
-# GS_CREDENTIALS = env('GS_CREDENTIALS')
-# if GS_CREDENTIALS_FILE_NAME and os.path.exists(GS_CREDENTIALS_PATH):
-#     GS_CREDENTIALS = service_account.Credentials.from_service_account_file(GS_CREDENTIALS_PATH)
-# else:
-#     print(f"ADVERTENCIA: Archivo de credenciales de Google Cloud Storage no encontrado o nombre no especificado: {GS_CREDENTIALS_PATH}")
 GS_CREDENTIALS_JSON =  env('GS_CREDENTIALS')
 service_account_info = json.loads(GS_CREDENTIALS_JSON)
 GS_CREDENTIALS = service_account.Credentials.from_service_account_info(service_account_info)
+
+GS_BUCKET_NAME = env('GS_BUCKET_NAME')
 GS_DEFAULT_ACL = 'publicRead'
 GS_QUERYSTRING_AUTH = False
 
