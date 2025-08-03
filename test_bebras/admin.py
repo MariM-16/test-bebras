@@ -164,7 +164,7 @@ class AttemptAdmin(admin.ModelAdmin):
     list_display = ('user', 'test', 'date_taken', 'score', 'correct_count')
     list_filter = ('date_taken', 'user', 'test')
     search_fields = ('user__username', 'test__name')
-    readonly_fields = ('user', 'test', 'date_taken', 'score', 'correct_count')
+    readonly_fields = ('user', 'test', 'date_taken', 'end_time', 'score', 'correct_count')
 
     def has_add_permission(self, request):
         return False

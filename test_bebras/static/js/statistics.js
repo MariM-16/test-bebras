@@ -103,6 +103,11 @@ document.addEventListener('DOMContentLoaded', function() {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                layout: {
+                    padding: {
+                        top: 20
+                    }
+                },
                 plugins: {
                     legend: {
                         position: 'top'
@@ -112,13 +117,15 @@ document.addEventListener('DOMContentLoaded', function() {
                         text: 'Rendimiento por Habilidad'
                     },
                     datalabels: {
-                        anchor: 'end',
-                        align: 'top',
+                        anchor: 'center', 
+                        align: 'center',
+                        offset: 5, 
                         formatter: (value, context) => value.toFixed(0),
                         font: {
                             weight: 'bold'
-                        }
-                    }
+                        },
+                        color: '#000' 
+                    }    
                 },
                 scales: {
                     x: {
@@ -137,7 +144,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         title: {
                             display: true,
                             text: 'Cantidad'
-                        }
+                        },
+                        suggestedMax: 10
                     }
                 }
             }

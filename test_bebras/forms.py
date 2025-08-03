@@ -1,5 +1,5 @@
 from django import forms
-from .models import Test, Question, Skill, Group
+from .models import Test, Question, Skill, Group, GroupMetadata
 from django.contrib.auth.models import User
 from django.forms.widgets import CheckboxSelectMultiple, Textarea
 import csv

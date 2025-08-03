@@ -6,24 +6,30 @@ from django.conf import settings
 from django.utils import timezone
 import pytz 
 
-from ..models import Attempt, Group, Test
+from ..models import Attempt, Group, Test, GroupMetadata, TestAssignment
+from django.contrib.auth import get_user_model
 
-def generate_attempts_xlsx_report(group_id_filter=None, test_id_filter=None):
+def generate_attempts_xlsx_report(user, group_id_filter=None, test_id_filter=None):
 
-    attempts = Attempt.objects.all().order_by('user__username', 'test__name', 'date_taken')
+    if not user.is_staff:
+        test_assignments_queryset = TestAssignment.objects.filter(
+            assigned_by=user,
+            group__groupmetadata__created_by=user,
+            test__creator=user
+        )
+    else:
+        test_assignments_queryset = TestAssignment.objects.all()
 
     filtered_group_name = None
     if group_id_filter:
-        attempts = attempts.filter(user__groups__id=group_id_filter)
-        try:
-            filtered_group = Group.objects.get(id=group_id_filter)
-            filtered_group_name = filtered_group.name
-        except Group.DoesNotExist:
-            filtered_group_name = "Grupo Desconocido"
-
+        test_assignments_queryset = test_assignments_queryset.filter(group__id=group_id_filter)
     if test_id_filter:
-        attempts = attempts.filter(test__id=test_id_filter)
-
+        test_assignments_queryset = test_assignments_queryset.filter(test__id=test_id_filter)
+    
+    
+    if not test_assignments_queryset.exists():
+        return None
+    
     workbook = openpyxl.Workbook()
     sheet = workbook.active
     sheet.title = "Resultados de Intentos"
@@ -34,9 +40,9 @@ def generate_attempts_xlsx_report(group_id_filter=None, test_id_filter=None):
     center_aligned_text = Alignment(horizontal="center", vertical="center")
 
     headers = [
-        "N° Intento", "Usuario", "Correo Electrónico", "Grupo(s)", "Nombre del Test",
-        "Fecha de Intento", "Puntuación (%)", "Respuestas Correctas",
-        "Límite de Tiempo (min)", "Permite retroceder", "Permite no responder"
+        "N° Intento", "Estudiante", "Correo Electrónico", "Grupo(s)", "Nombre del Test",
+        "Fecha de Intento", "Puntuación", "Respuestas Correctas",
+        "Límite de Tiempo (min)", "Permite retroceder", "Permite no responder", 'Fecha Finalizado'
     ]
     sheet.append(headers)
 
@@ -68,42 +74,47 @@ def generate_attempts_xlsx_report(group_id_filter=None, test_id_filter=None):
         except pytz.exceptions.UnknownTimeZoneError:
             chile_tz = None
 
-    for attempt in attempts:
-        if attempt.user.id != current_user_id or attempt.test.id != current_test_id:
-            attempt_counter = 1
-            current_user_id = attempt.user.id
-            current_test_id = attempt.test.id
-        else:
-            attempt_counter += 1
+    for test_assignment in test_assignments_queryset:
+        attempts_for_assignment = Attempt.objects.filter(
+            test=test_assignment.test,
+            user__groups=test_assignment.group
+        ).order_by('user__username', 'date_taken')
+        
+        current_user_id = None
+        attempt_counter = 0
 
-        if filtered_group_name:
-            groups_display = filtered_group_name
-        else:
-            user_groups_names = [g.name for g in attempt.user.groups.all() if g.name not in ["ESTUDIANTES", "Profesores"]]
-            groups_display = ", ".join(user_groups_names) if user_groups_names else "N/A"
+        for attempt in attempts_for_assignment:
+            if attempt.user.id != current_user_id:
+                attempt_counter = 1
+                current_user_id = attempt.user.id
+            else:
+                attempt_counter += 1
 
-        local_date_taken = attempt.date_taken
-        if chile_tz and timezone.is_aware(local_date_taken):
-            local_date_taken = local_date_taken.astimezone(chile_tz)
-        elif chile_tz and timezone.is_naive(local_date_taken):
-            local_date_taken = timezone.make_aware(local_date_taken, timezone.utc).astimezone(chile_tz)
+            groups_display = test_assignment.group.name
 
-        sheet.cell(row=row_num, column=1, value=attempt_counter)
-        sheet.cell(row=row_num, column=2, value=attempt.user.get_full_name() or attempt.user.username)
-        sheet.cell(row=row_num, column=3, value=attempt.user.email)
-        sheet.cell(row=row_num, column=4, value=groups_display)
-        sheet.cell(row=row_num, column=5, value=attempt.test.name)
-        sheet.cell(row=row_num, column=6, value=local_date_taken.strftime("%Y-%m-%d %H:%M:%S"))
-        sheet.cell(row=row_num, column=7, value=float(attempt.score))
-        sheet.cell(row=row_num, column=8, value=attempt.correct_count)
-        sheet.cell(row=row_num, column=9, value=attempt.test.maximum_time.total_seconds() / 60 if attempt.test.maximum_time else "N/A")
-        sheet.cell(row=row_num, column=10, value="Sí" if attempt.test.allow_backtracking else "No")
-        sheet.cell(row=row_num, column=11, value="Sí" if attempt.test.allow_no_response else "No")
+            local_date_taken = attempt.date_taken
+            if chile_tz and timezone.is_aware(local_date_taken):
+                local_date_taken = local_date_taken.astimezone(chile_tz)
+            elif chile_tz and timezone.is_naive(local_date_taken):
+                local_date_taken = timezone.make_aware(local_date_taken, timezone.utc).astimezone(chile_tz)
 
-        for col_idx in range(1, len(headers) + 1):
-            sheet.cell(row=row_num, column=col_idx).border = border_style
+            sheet.cell(row=row_num, column=1, value=attempt_counter)
+            sheet.cell(row=row_num, column=2, value=attempt.user.get_full_name() or attempt.user.username)
+            sheet.cell(row=row_num, column=3, value=attempt.user.email)
+            sheet.cell(row=row_num, column=4, value=groups_display)
+            sheet.cell(row=row_num, column=5, value=attempt.test.name)
+            sheet.cell(row=row_num, column=6, value=attempt.date_taken.strftime("%Y-%m-%d %H:%M:%S"))
+            sheet.cell(row=row_num, column=7, value=float(attempt.score))
+            sheet.cell(row=row_num, column=8, value=attempt.correct_count)
+            sheet.cell(row=row_num, column=9, value=attempt.test.maximum_time.total_seconds() / 60 if attempt.test.maximum_time else "N/A")
+            sheet.cell(row=row_num, column=10, value="Sí" if attempt.test.allow_backtracking else "No")
+            sheet.cell(row=row_num, column=11, value="Sí" if attempt.test.allow_no_response else "No")
+            sheet.cell(row=row_num, column=12, value=attempt.end_time.strftime("%Y-%m-%d %H:%M:%S") if attempt.end_time else "-")
 
-        row_num += 1
+            for col_idx in range(1, len(headers) + 1):
+                sheet.cell(row=row_num, column=col_idx).border = border_style
+
+            row_num += 1
 
     from io import BytesIO
     excel_file = BytesIO()

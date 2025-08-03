@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.urls import reverse
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User, Group
-from .models import Test, Answer, Choice, Attempt, Question, TestAssignment, Skill
+from .models import Test, Answer, Choice, Attempt, Question, TestAssignment, Skill, GroupMetadata
 from collections import defaultdict
 from django.db.models import Q
 from django.contrib import messages
@@ -216,12 +216,17 @@ def test_attempts(request):
             attempts_queryset = Attempt.objects.all()
         else:
             groups_visible_to_teacher = Group.objects.filter(
-                testassignment__assigned_by=request.user
-            ).distinct().exclude(name__in=['Estudiantes', 'Profesores']).order_by('name')
+                groupmetadata__created_by=request.user
+            ).exclude(name__in=['Estudiantes', 'Profesores']).order_by('name')
 
             tests_visible_to_teacher = Test.objects.filter(creator=request.user).order_by('name')
 
-            attempts_queryset = Attempt.objects.filter(test__creator=request.user)
+            attempts_queryset = Attempt.objects.filter(
+                user__groups__in=groups_visible_to_teacher,
+                test__creator=request.user,
+                test__testassignment__assigned_by=request.user,
+                test__testassignment__group__in=groups_visible_to_teacher
+            ).distinct()
 
         selected_group_id = request.GET.get('group', '')
         selected_test_id = request.GET.get('test', '')
@@ -229,7 +234,11 @@ def test_attempts(request):
         if selected_group_id:
             try:
                 group_obj = Group.objects.get(id=selected_group_id)
-                attempts_queryset = attempts_queryset.filter(user__groups=group_obj)
+                if not request.user.is_staff and not GroupMetadata.objects.filter(group=group_obj, created_by=request.user).exists():
+                     messages.error(request, "No tienes permiso para ver los resultados de este grupo.")
+                     attempts_queryset = attempts_queryset.none()
+                else:
+                    attempts_queryset = attempts_queryset.filter(user__groups=group_obj)
             except Group.DoesNotExist:
                 messages.warning(request, "Grupo no válido seleccionado.")
 
@@ -313,8 +322,8 @@ def group_detail_view(request, group_id):
     target_group = get_object_or_404(Group.objects.exclude(name__in=['Estudiantes', 'Profesores']), id=group_id)
 
     if not request.user.is_staff:
-        if not TestAssignment.objects.filter(group=target_group, assigned_by=request.user).exists():
-            messages.error(request, "No tienes permiso para ver este grupo.")
+        if not GroupMetadata.objects.filter(group=target_group, created_by=request.user).exists():
+            messages.error(request, "No tienes permiso para ver este grupo, ya que no lo creaste tú.")
             return redirect('group_list')
 
     student_role_group, _ = Group.objects.get_or_create(name='Estudiantes')
@@ -564,7 +573,7 @@ def assign_test_to_group_view(request):
         groups_queryset_for_form = Group.objects.exclude(name__in=['Estudiantes', 'Profesores']).order_by('name')
     else:
         groups_queryset_for_form = Group.objects.filter(
-            testassignment__assigned_by=request.user
+            groupmetadata__created_by=request.user
         ).distinct().exclude(name__in=['Estudiantes', 'Profesores']).order_by('name')
 
     groups_data = []
@@ -629,10 +638,23 @@ def export_attempts_xlsx(request):
     group_id_filter = request.GET.get('group')
     test_id_filter = request.GET.get('test')
 
+    if not request.user.is_staff:
+        if group_id_filter and not GroupMetadata.objects.filter(group_id=group_id_filter, created_by=request.user).exists():
+            messages.error(request, "No tienes permiso para exportar resultados de este grupo.")
+            return redirect('test_attempts') 
+        
+        if test_id_filter and not Test.objects.filter(id=test_id_filter, creator=request.user).exists():
+            messages.error(request, "No tienes permiso para exportar resultados de este test.")
+            return redirect('test_attempts')
+
     excel_file_buffer = generate_attempts_xlsx_report(
+        user=request.user,
         group_id_filter=group_id_filter,
         test_id_filter=test_id_filter
     )
+    if excel_file_buffer is None:
+        messages.error(request, "No tienes permiso para generar este reporte o los filtros son inválidos.")
+        return redirect('test_attempts')
 
     response = HttpResponse(
         excel_file_buffer.getvalue(), 
@@ -645,14 +667,20 @@ def export_attempts_xlsx(request):
 @login_required
 @user_passes_test(is_teacher_or_staff)
 def group_history_results(request, group_id):
-    group = get_object_or_404(Group, id=group_id)
+    if request.user.is_staff:
+        group = get_object_or_404(Group, id=group_id)
+    else:
+        group = get_object_or_404(Group, id=group_id, groupmetadata__created_by=request.user)
 
     test_summaries = Test.objects.filter(
-        attempt__user__groups=group
+        creator=request.user,
+        testassignment__group=group,
+        testassignment__assigned_by=request.user,
+        attempt__user__groups=group  
     ).annotate(
         avg_score=Avg('attempt__score'),
         total_attempts=Count('attempt', distinct=True)
-    ).order_by('name')
+    ).order_by('name').distinct() 
 
     students_in_group = User.objects.filter(groups=group).order_by('username')
     student_results = []
@@ -679,14 +707,32 @@ def test_statistics_dashboard(request):
     group_id = request.GET.get('group')
     test_id = request.GET.get('test')
 
-    attempts_queryset = Attempt.objects.all()
+    if not request.user.is_staff:
+        groups_visible_to_teacher = Group.objects.filter(groupmetadata__created_by=request.user).distinct()
+        tests_visible_to_teacher = Test.objects.filter(creator=request.user)
+        attempts_queryset = Attempt.objects.filter(
+            user__groups__in=groups_visible_to_teacher,
+            test__in=tests_visible_to_teacher,
+            test__testassignment__assigned_by=request.user,
+            test__testassignment__group__in=groups_visible_to_teacher
+        ).distinct()
+    else: 
+        attempts_queryset = Attempt.objects.all()
 
     if group_id:
+        if request.user.is_staff:
+            group_obj = get_object_or_404(Group, id=group_id)
+        else:
+            group_obj = get_object_or_404(Group, id=group_id, groupmetadata__created_by=request.user)
         attempts_queryset = attempts_queryset.filter(user__groups__id=group_id)
-        context['selected_group'] = get_object_or_404(Group, id=group_id)
+        context['selected_group'] = group_obj 
     if test_id:
+        if request.user.is_staff:
+            test_obj = get_object_or_404(Test, id=test_id)
+        else:
+            test_obj = get_object_or_404(Test, id=test_id, creator=request.user)
         attempts_queryset = attempts_queryset.filter(test__id=test_id)
-        context['selected_test'] = get_object_or_404(Test, id=test_id)
+        context['selected_test'] = test_obj
 
     if not attempts_queryset.exists():
         context['user_attempt_counts'] = []
