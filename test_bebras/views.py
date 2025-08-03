@@ -667,20 +667,29 @@ def export_attempts_xlsx(request):
 @login_required
 @user_passes_test(is_teacher_or_staff)
 def group_history_results(request, group_id):
+
     if request.user.is_staff:
         group = get_object_or_404(Group, id=group_id)
+        
+        test_summaries = Test.objects.filter(
+            testassignment__group=group,
+            attempt__user__groups=group
+        ).annotate(
+            avg_score=Avg('attempt__score'),
+            total_attempts=Count('attempt', distinct=True)
+        ).order_by('name').distinct()
     else:
         group = get_object_or_404(Group, id=group_id, groupmetadata__created_by=request.user)
 
-    test_summaries = Test.objects.filter(
-        creator=request.user,
-        testassignment__group=group,
-        testassignment__assigned_by=request.user,
-        attempt__user__groups=group  
-    ).annotate(
-        avg_score=Avg('attempt__score'),
-        total_attempts=Count('attempt', distinct=True)
-    ).order_by('name').distinct() 
+        test_summaries = Test.objects.filter(
+            creator=request.user,
+            testassignment__group=group,
+            testassignment__assigned_by=request.user,
+            attempt__user__groups=group
+        ).annotate(
+            avg_score=Avg('attempt__score'),
+            total_attempts=Count('attempt', distinct=True)
+        ).order_by('name').distinct()
 
     students_in_group = User.objects.filter(groups=group).order_by('username')
     student_results = []
