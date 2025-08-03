@@ -28,7 +28,7 @@ PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 SECRET_KEY = "django-insecure-my)+la&!pf3=@tit7tw$!@yffeb9vee#2#+dv3ec^mppw^)9&%"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 # Application definition
 
